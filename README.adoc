@@ -22,7 +22,7 @@ TODO ...
 
 ## Issues
 
-See [Issues](https://github.com/rollout/cloudbees-feature-management-plugin/issues).
+See link:https://github.com/rollout/cloudbees-feature-management-plugin/issues[Issues].
 
 ## Contributing
 
@@ -30,5 +30,5 @@ Refer to the Jenkins Community [contribution guidelines](https://github.com/jenk
 
 ## LICENSE
 
-Licensed under MIT, see [LICENSE](LICENSE.md)
+Licensed under MIT, see link:LICENSE.md[LICENSE]
 
