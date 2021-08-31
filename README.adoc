@@ -3,17 +3,14 @@
 
 # CloudBees Feature Management Jenkins Plugin
 
-[![Build Status](https://ci.jenkins.io/job/Plugins/job/cloudbees-feature-management-plugin/job/master/badge/icon)](https://ci.jenkins.io/job/Plugins/job/cloudbees-feature-management-plugin/job/master/)
-[![Contributors](https://img.shields.io/github/contributors/jenkinsci/cloudbees-feature-management-plugin.svg)](https://github.com/jenkinsci/cloudbees-feature-management-plugin/graphs/contributors)
-[![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/cloudbees-feature-management.svg)](https://plugins.jenkins.io/cloudbees-feature-management)
-[![GitHub release](https://img.shields.io/github/release/jenkinsci/cloudbees-feature-management-plugin.svg?label=changelog)](https://github.com/jenkinsci/cloudbees-feature-management-plugin/releases/latest)
-[![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/cloudbees-feature-management.svg?color=blue)](https://plugins.jenkins.io/cloudbees-feature-management)
-
 ## Introduction
 
 A simple Jenkins Plugin to support CI/CD automation of some CloudBees Feature Management operations.
 
-> **NOTE**: This plugin repository may eventually move to https://github.com/jenkinsci 
+[IMPORTANT]
+==== 
+This plugin repository may eventually move to https://github.com/jenkinsci
+====
 
 ## Getting started
 
