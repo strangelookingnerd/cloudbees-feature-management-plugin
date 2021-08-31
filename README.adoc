@@ -1,3 +1,6 @@
+:toc:
+:toclevels: 4
+
 # CloudBees Feature Management Jenkins Plugin
 
 [![Build Status](https://ci.jenkins.io/job/Plugins/job/cloudbees-feature-management-plugin/job/master/badge/icon)](https://ci.jenkins.io/job/Plugins/job/cloudbees-feature-management-plugin/job/master/)
@@ -10,9 +13,15 @@
 
 A simple Jenkins Plugin to support CI/CD automation of some CloudBees Feature Management operations.
 
+> **NOTE**: This plugin repository may eventually move to https://github.com/jenkinsci 
+
 ## Getting started
 
 The plugin needs to be installed manually. Ask CloudBees customer support for a download link, or checkout and build the plugin from source.
+
+## Usage
+
+TODO ...
 
 ## Issues
 
