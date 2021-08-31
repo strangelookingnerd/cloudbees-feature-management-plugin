@@ -16,7 +16,7 @@ The plugin needs to be installed manually. Ask CloudBees customer support for a 
 
 ## Issues
 
-TODO: Add link.
+See [Issues](https://github.com/rollout/cloudbees-feature-management-plugin/issues).
 
 ## Contributing
 
