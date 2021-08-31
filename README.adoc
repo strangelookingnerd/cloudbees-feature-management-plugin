@@ -26,7 +26,7 @@ See link:https://github.com/rollout/cloudbees-feature-management-plugin/issues[I
 
 ## Contributing
 
-Refer to the Jenkins Community [contribution guidelines](https://github.com/jenkinsci/.github/blob/master/CONTRIBUTING.md)
+Refer to the Jenkins Community link:https://github.com/jenkinsci/.github/blob/master/CONTRIBUTING.md[contribution guidelines]
 
 ## LICENSE
 
