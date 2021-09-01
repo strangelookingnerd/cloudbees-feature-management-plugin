@@ -16,40 +16,44 @@ import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import java.io.IOException;
+import java.util.Optional;
 import jenkins.tasks.SimpleBuildStep;
 import org.jenkinsci.Symbol;
+import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class FeatureManagementBuilder extends Builder implements SimpleBuildStep {
+public class FeatureManagementConfigurationBuilder extends Builder implements SimpleBuildStep {
     
-    private final String flagInstructionsFilePath;
+    private final String flagConfigInstructions;
 
     @DataBoundConstructor
-    public FeatureManagementBuilder(String flagInstructionsFilePath) {
-        this.flagInstructionsFilePath = flagInstructionsFilePath;
+    public FeatureManagementConfigurationBuilder(String flagConfigInstructions) {
+        this.flagConfigInstructions = flagConfigInstructions;
     }
 
-    public String getFlagInstructionsFilePath() {
-        return flagInstructionsFilePath;
+    public String getFlagConfigInstructions() {
+        return flagConfigInstructions;
     }
 
     @Override
     public void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull EnvVars env,
                         @NonNull Launcher launcher, @NonNull TaskListener listener)
             throws InterruptedException, IOException {
-        listener.getLogger().println("*** flagInstructionsFilePath: " + flagInstructionsFilePath);
+        Optional<StringCredentials> accessToken = FeatureManagementGlobalConfiguration.get().getAccessTokenCredential();
+        listener.getLogger().println("*** flagConfigInstructions: " + flagConfigInstructions);
+        listener.getLogger().println("*** accessToken: " + accessToken);
     }
 
-    @Symbol("featureManagement")
+    @Symbol("featureManagementConfig")
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
         @Override
         public String getDisplayName() {
-            return "Feature Management";
+            return "Feature Management Configuration";
         }
 
         @Override
