@@ -14,7 +14,7 @@ This plugin repository may eventually move to https://github.com/jenkinsci
 
 ## Getting started
 
-The plugin needs to be installed manually. Ask CloudBees customer support for a download link, or checkout and build the plugin from source.
+The plugin needs to be installed manually. The latest `.hpi` plugin file can be download from the latest run of the link:https://github.com/rollout/cloudbees-feature-management-plugin/actions/workflows/upload-hpi.yaml?query=branch%3Amaster[Upload Plugin HPI Workflow].
 
 ## Usage
 
