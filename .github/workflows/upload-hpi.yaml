@@ -1,0 +1,24 @@
+name: Upload Plugin HPI
+on: [push]
+jobs:
+  Upload-Plugin-HPI:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Step 1 - Build
+        run: mvn package
+
+      - name: Step 2 - Use the Upload Artifact GitHub Action
+        uses: actions/upload-artifact@v2
+        with:
+          name: cloudbees-feature-management.hpi
+          path: target/cloudbees-feature-management.hpi
