@@ -1,7 +1,7 @@
 <div>
     Feature Flag "Set" (create and/or configure) and "Delete" instructions.
-    <p/>
-    <strong>Format:</strong><br/>
+
+    <h3>Format</h3>
     <code>
     {<br/>
     &nbsp;&nbsp;set: [<br/>
@@ -12,8 +12,8 @@
     &nbsp;&nbsp;] <br/>
     }        
     </code>
-    <p/>
-    <strong>Example - create a flag (only) i.e. not enabled etc.:</strong><br/>
+
+    <h3>Example - create a flag (only) i.e. not enabled etc.:</h3>
     <pre>{
   set: [
     {
@@ -22,8 +22,9 @@
   ]
 }
     </pre>
-    <p/>
-    <strong>Example - create and configure a flag:</strong><br/>
+
+    <h3>Example - create and configure a flag:</h3>
+    <strong style="color: red">(Note the Environment Name must be specified)</strong><br/>
     <pre>{
   set: [
     {
@@ -36,8 +37,8 @@
   ]
 }
     </pre>
-    <p/>
-    <strong>Example - delete flag(s):</strong><br/>
+
+    <h3>Example - delete flag(s):</h3>
     <pre>{
   delete: ['acmeFlagControl']
 }
