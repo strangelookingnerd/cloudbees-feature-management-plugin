@@ -25,8 +25,6 @@ import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 @Extension
 public class FeatureManagementGlobalConfiguration extends GlobalConfiguration {
 
-    private static final Logger LOGGER = Logger.getLogger(FeatureManagementGlobalConfiguration.class.getName());
-
     /**
      * The access token to be used when accessing the public API.
      * <p/>
