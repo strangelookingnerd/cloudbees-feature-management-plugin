@@ -18,7 +18,7 @@ The plugin needs to be installed manually. The latest `.hpi` plugin file can be 
 
 ## Usage
 
-TODO ...
+video::sINjT5iwdgA[youtube]
 
 ## Issues
 
