@@ -19,7 +19,7 @@ The plugin needs to be installed manually. The latest `.hpi` plugin file can be 
 ## Usage
 
 ifdef::env-github[]
-image:https://img.youtube.com/vi/sINjT5iwdgA/maxresdefault.jpg[link=https://youtu.be/sINjT5iwdgA]
+image:http://i3.ytimg.com/vi/sINjT5iwdgA/hqdefault.jpg[link=https://youtu.be/sINjT5iwdgA]
 endif::[]
 
 ifndef::env-github[]
