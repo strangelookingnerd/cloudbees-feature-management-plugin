@@ -20,7 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 
 /**
- * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
+ *
  */
 @Extension
 public class FeatureManagementGlobalConfiguration extends GlobalConfiguration {

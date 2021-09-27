@@ -30,7 +30,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
 /**
- * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
+ * 
  */
 public class FeatureManagementConfigurationBuilder extends Builder implements SimpleBuildStep {
 
