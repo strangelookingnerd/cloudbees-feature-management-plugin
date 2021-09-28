@@ -14,7 +14,14 @@ This plugin repository may eventually move to https://github.com/jenkinsci
 
 ## Installing the plugin
 
-The plugin needs to be installed manually. The latest `.hpi` plugin file can be download from the latest run of the link:https://github.com/rollout/cloudbees-feature-management-plugin/actions/workflows/upload-hpi.yaml?query=branch%3Amaster[Upload Plugin HPI Workflow]. After downloading, unzip the file to get the `.hpi` file to install in Jenkins. 
+The plugin needs to be installed manually. The latest `.hpi` plugin file can be download from the latest run of the link:https://github.com/rollout/cloudbees-feature-management-plugin/actions/workflows/upload-hpi.yaml?query=branch%3Amaster[Upload Plugin HPI Workflow]. After downloading, unzip the file to get the `.hpi` file to install in Jenkins.
+
+[IMPORTANT]
+==== 
+It is not recommended to share this plugin outside of CloudBees *while this repo is NOT managed properly* (under CAP/link:https://github.com/jenkinsci/[jenkinsci]) and therefore not published from an official Update Site from where users can automatically receive updates.
+
+While the plugin is in an unofficial repo (like this) it will miss important updates (e.g. security updates) and therefore *may compromise a Customer's installation* if installed there.
+====
 
 ## Usage
 
