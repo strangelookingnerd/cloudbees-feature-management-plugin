@@ -1,0 +1,11 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
+  <l:layout title="Flag configuration">
+    <st:include page="sidepanel.jelly" it="${it.owner}"/>
+    <l:main-panel>
+      <h1>Flag configurations for Environment ${it.environmentId}</h1>
+      <p>The flag configuration consists of ${it.experiments.size()} experiments and ${it.targetGroups.size()} target groups.</p>
+      <p>It was last modified on ${it.signedDate}.</p>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

@@ -5,8 +5,6 @@
 
 package com.cloudbees.fm.jenkins;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -19,16 +17,11 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import io.rollout.configuration.Configuration;
 import io.rollout.configuration.ConfigurationFetcher;
-import io.rollout.configuration.LocalConfiguration;
 import io.rollout.configuration.comparison.ConfigurationComparator;
 import io.rollout.configuration.comparison.ConfigurationComparisonResult;
-import io.rollout.configuration.json.ExperimentModelDeserializer;
-import io.rollout.flags.models.ExperimentModel;
-import java.io.File;
+import io.rollout.configuration.persistence.ConfigurationPersister;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.text.ParseException;
-import java.util.logging.Logger;
 import jenkins.tasks.SimpleBuildStep;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -40,12 +33,10 @@ import org.kohsuke.stapler.DataBoundSetter;
 public class FeatureManagementConfigurationBuilder extends Builder implements SimpleBuildStep {
 
     private String environmentId;
-    private transient ObjectMapper mapper;
 
     @DataBoundConstructor
     public FeatureManagementConfigurationBuilder(String environmentId) {
         this.environmentId = environmentId;
-        mapper = new ObjectMapper();
     }
 
     public String getEnvironmentId() {
@@ -63,26 +54,21 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
             throws InterruptedException, IOException {
 
         try {
-            // why is mapper not initialized?
-            mapper = new ObjectMapper();
-            SimpleModule module = new SimpleModule();
-            module.addDeserializer(ExperimentModel.class, new ExperimentModelDeserializer());
-            mapper.registerModule(module);
-
             Configuration config = ConfigurationFetcher.getInstance().getConfiguration(environmentId);
+            run.addAction(new FeatureManagementConfigurationAction(environmentId));
+
             listener.getLogger().printf("Retrieved CloudBees Feature Management configuration for %s. %d Experiments, %d Target Groups. Last Updated: %s\n",
                     environmentId, config.getExperiments().size(), config.getTargetGroups().size(), config.getSignedDate().toString());
 
             // Save the config
-            mapper.writeValue(Paths.get(run.getRootDir() + "/" + generateFileName(environmentId)).toFile(), config);
+            ConfigurationPersister.getInstance().save(config, run, environmentId);
 
             // Awesome, we saved the config. Now load the config from the last successful build
             Run<?, ?> previousSuccessfulBuild = run.getPreviousSuccessfulBuild();
             if (previousSuccessfulBuild != null) {
                 // read the file
-                File oldPath = Paths.get(previousSuccessfulBuild.getRootDir() + "/" + generateFileName(environmentId)).toFile();
                 try {
-                    LocalConfiguration oldConfig = mapper.readValue(oldPath, LocalConfiguration.class);
+                    Configuration oldConfig = ConfigurationPersister.getInstance().load(previousSuccessfulBuild, environmentId);
 
                     ConfigurationComparisonResult comparison = new ConfigurationComparator().compare(oldConfig, config);
                     listener.getLogger().println("configs are " + (comparison.areEqual() ? "not " : "") + "different");
@@ -98,8 +84,9 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
         }
     }
 
-    private static String generateFileName(String environmentId) {
-        return "cbfm-configuration-" + environmentId + ".json";
+    @Override
+    public boolean requiresWorkspace() {
+        return false; // Jesse said this was important
     }
 
     @Symbol("featureManagementConfig")

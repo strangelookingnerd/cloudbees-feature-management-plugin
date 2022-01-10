@@ -1,0 +1,7 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <t:summary icon="/plugin/cloudbees-feature-management/images/cloudbees.png">
+    <p><a href="flags">Flag configuration</a> consists of ${it.experiments.size()} experiments and ${it.targetGroups.size()} target groups and was last updated at ${it.signedDate} (UTC).
+        There ${it.isUnchanged ? "are no" : "have been"} changes from the previous successful build (<a href="/jenkins/${it.previousSuccessfulBuild.getUrl()}">#${it.previousSuccessfulBuild.getNumber()}</a>).</p>
+    </t:summary>
+</j:jelly>
