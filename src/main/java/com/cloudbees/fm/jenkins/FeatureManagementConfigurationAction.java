@@ -3,15 +3,14 @@ package com.cloudbees.fm.jenkins;
 import hudson.model.Run;
 import io.rollout.configuration.Configuration;
 import io.rollout.configuration.comparison.ConfigurationComparator;
+import io.rollout.configuration.comparison.ConfigurationComparisonResult;
 import io.rollout.configuration.persistence.ConfigurationPersister;
 import io.rollout.flags.models.ExperimentModel;
 import io.rollout.flags.models.TargetGroupModel;
 import java.io.IOException;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import jenkins.model.RunAction2;
 
@@ -74,13 +73,8 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
         return getConfiguration().getTargetGroups();
     }
 
-    public String getSignedDate() {
-        // TODO - how do we get the user's timezone when rendering server-side data?
-        DateTimeFormatter formatter =
-                DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-//                        .withLocale(Locale.UK)
-                        .withZone(ZoneId.systemDefault());
-        return formatter.format(Instant.now());
+    public Date getSignedDate() {
+        return Date.from(Instant.now());
     }
 
     public Run<?, ?> getPreviousSuccessfulBuild() {
@@ -88,9 +82,15 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
     }
 
     public boolean getIsUnchanged() throws IOException {
-        // Get the configuration from the previous build.
+        return new ConfigurationComparator().compare(getPreviousSuccessfulConfig(), getConfiguration()).areEqual();
+    }
+
+    public ConfigurationComparisonResult getConfigurationChanges() throws IOException {
+        return new ConfigurationComparator().compare(getPreviousSuccessfulConfig(), getConfiguration());
+    }
+
+    private Configuration getPreviousSuccessfulConfig() throws IOException {
         // TODO - we can probably cache this and move the fetching from the Action to the Run
-        Configuration previousConfig = ConfigurationPersister.getInstance().load(run, environmentId);
-        return new ConfigurationComparator().compare(previousConfig, getConfiguration()).areEqual();
+        return ConfigurationPersister.getInstance().load(run.getPreviousSuccessfulBuild(), environmentId);
     }
 }
