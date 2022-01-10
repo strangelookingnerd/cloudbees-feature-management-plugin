@@ -1,4 +1,4 @@
 <?jelly escape-by-default='true'?>
 <div>
-    Automated configuration of CloudBees Feature Flags.
+    Displays configuration of CloudBees Feature Flags at the time of build, and any differences from previous builds.
 </div>

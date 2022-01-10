@@ -5,6 +5,8 @@
 
 package com.cloudbees.fm.jenkins;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -15,17 +17,20 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
+import io.rollout.configuration.Configuration;
+import io.rollout.configuration.ConfigurationFetcher;
+import io.rollout.configuration.LocalConfiguration;
+import io.rollout.configuration.comparison.ConfigurationComparator;
+import io.rollout.configuration.comparison.ConfigurationComparisonResult;
+import io.rollout.configuration.json.ExperimentModelDeserializer;
+import io.rollout.flags.models.ExperimentModel;
+import java.io.File;
 import java.io.IOException;
-import java.util.Optional;
-import java.util.logging.Level;
+import java.nio.file.Paths;
+import java.text.ParseException;
 import java.util.logging.Logger;
 import jenkins.tasks.SimpleBuildStep;
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
 import org.jenkinsci.Symbol;
-import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
@@ -34,94 +39,67 @@ import org.kohsuke.stapler.DataBoundSetter;
  */
 public class FeatureManagementConfigurationBuilder extends Builder implements SimpleBuildStep {
 
-    private static final Logger LOGGER = Logger.getLogger(FeatureManagementConfigurationBuilder.class.getName());
-
-    private final String applicationId;
-    private String environmentName;
-    private final String flagConfigInstructions;
+    private String environmentId;
+    private transient ObjectMapper mapper;
 
     @DataBoundConstructor
-    public FeatureManagementConfigurationBuilder(String applicationId, String flagConfigInstructions) {
-        this.applicationId = applicationId;
-        this.flagConfigInstructions = flagConfigInstructions;
+    public FeatureManagementConfigurationBuilder(String environmentId) {
+        this.environmentId = environmentId;
+        mapper = new ObjectMapper();
     }
 
-    public String getApplicationId() {
-        return applicationId;
-    }
-
-    public String getEnvironmentName() {
-        return environmentName;
+    public String getEnvironmentId() {
+        return environmentId;
     }
 
     @DataBoundSetter
-    public void setEnvironmentName(String environmentName) {
-        this.environmentName = environmentName;
-    }
-
-    public String getFlagConfigInstructions() {
-        return flagConfigInstructions;
+    public void setEnvironmentId(String environmentId) {
+        this.environmentId = environmentId;
     }
 
     @Override
     public void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull EnvVars env,
                         @NonNull Launcher launcher, @NonNull TaskListener listener)
             throws InterruptedException, IOException {
-        Optional<StringCredentials> accessToken = FeatureManagementGlobalConfiguration.get().getAccessTokenCredential();
-        
-        if (!accessToken.isPresent()) {
-            LOGGER.warning("'accessTokenCredentialId' is not configured in the System Configuration.");
-            return;
-        }
-        
-        // TODO: Add support for variable substitutions to allow a more dynamic config of flags?
-        
-        JSON json = JSONSerializer.toJSON(flagConfigInstructions);
-        
-        if (!(json instanceof JSONObject)) {
-            LOGGER.warning("'flagConfigInstructions' is not a value JSON Object.");
-            return;
-        }
 
-        JSONObject config = (JSONObject) json;
-        JSONArray setArray = config.optJSONArray("set");
-        JSONArray deleteArray = config.optJSONArray("delete");
-        FeatureManagementAPI api = new FeatureManagementAPI(accessToken.get());
+        try {
+            // why is mapper not initialized?
+            mapper = new ObjectMapper();
+            SimpleModule module = new SimpleModule();
+            module.addDeserializer(ExperimentModel.class, new ExperimentModelDeserializer());
+            mapper.registerModule(module);
 
-        if (setArray != null) {
-            doSets(api, setArray);
-        }
-        if (deleteArray != null) {
-            doDeletes(api, deleteArray);
+            Configuration config = ConfigurationFetcher.getInstance().getConfiguration(environmentId);
+            listener.getLogger().printf("Retrieved CloudBees Feature Management configuration for %s. %d Experiments, %d Target Groups. Last Updated: %s\n",
+                    environmentId, config.getExperiments().size(), config.getTargetGroups().size(), config.getSignedDate().toString());
+
+            // Save the config
+            mapper.writeValue(Paths.get(run.getRootDir() + "/" + generateFileName(environmentId)).toFile(), config);
+
+            // Awesome, we saved the config. Now load the config from the last successful build
+            Run<?, ?> previousSuccessfulBuild = run.getPreviousSuccessfulBuild();
+            if (previousSuccessfulBuild != null) {
+                // read the file
+                File oldPath = Paths.get(previousSuccessfulBuild.getRootDir() + "/" + generateFileName(environmentId)).toFile();
+                try {
+                    LocalConfiguration oldConfig = mapper.readValue(oldPath, LocalConfiguration.class);
+
+                    ConfigurationComparisonResult comparison = new ConfigurationComparator().compare(oldConfig, config);
+                    listener.getLogger().println("configs are " + (comparison.areEqual() ? "not " : "") + "different");
+
+                } catch (Exception e) {
+                    listener.getLogger().printf("Could not load previous flag configuration from last successful build (%d)\n", previousSuccessfulBuild.getNumber());
+                }
+            } else {
+                listener.getLogger().println("There were no previous successful build to compare the flag configurations to");
+            }
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private void doSets(FeatureManagementAPI api, JSONArray setArray) {
-        try {
-            for (int i = 0; i < setArray.size(); i++) {
-                JSONObject flagConfig = setArray.optJSONObject(i);
-                
-                if (flagConfig != null) {
-                    api.setFlag(this.applicationId, this.environmentName, flagConfig);
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Unexpected error processing Feature Management configuration set.", e);
-        }
-    }
-
-    private void doDeletes(FeatureManagementAPI api, JSONArray deleteArray) {
-        try {
-            for (int i = 0; i < deleteArray.size(); i++) {
-                String flagName = deleteArray.optString(i);
-
-                if (flagName != null) {
-                    api.deleteFlag(this.applicationId, flagName);
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Unexpected error processing Feature Management flag deletion set.", e);
-        }
+    private static String generateFileName(String environmentId) {
+        return "cbfm-configuration-" + environmentId + ".json";
     }
 
     @Symbol("featureManagementConfig")
@@ -129,8 +107,9 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
     public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
         @Override
+        @NonNull
         public String getDisplayName() {
-            return "Feature Management Configuration";
+            return "CloudBees Feature Management Configuration";
         }
 
         @Override

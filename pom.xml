@@ -45,6 +45,33 @@
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>plain-credentials</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>jackson2-api</artifactId>
+            <version>2.13.1-246.va8a9f3eaf46a</version>
+        </dependency>
+
+        <!--Dependencies for farting around with the Rollout Configuration-->
+        <dependency>
+            <groupId>io.rollout.rox</groupId>
+            <artifactId>rox-java-core</artifactId>
+            <version>5.0.5-snapshot</version>
+        </dependency>
+
+        <!--    Hacks from locally installed gradle package - REMOVE THESE AS THEY SHOULD COME TRANSITIVELY FROM rox-java-core -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>3.9.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <!--END HACKS-->
+
 
         <!-- Don't require Jenkins Pipeline. -->
         <dependency>
@@ -67,8 +94,8 @@
             <artifactId>workflow-durable-task-step</artifactId>
             <scope>test</scope>
         </dependency>
-    </dependencies>    
-    
+    </dependencies>
+
     <licenses>
         <license>
             <name>MIT License</name>
