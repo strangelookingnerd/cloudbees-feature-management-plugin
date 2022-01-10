@@ -73,8 +73,8 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
         return getConfiguration().getTargetGroups();
     }
 
-    public Date getSignedDate() {
-        return Date.from(Instant.now());
+    public Date getSignedDate() throws IOException {
+        return getConfiguration().getSignedDate();
     }
 
     public Run<?, ?> getPreviousSuccessfulBuild() {
