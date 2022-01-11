@@ -1,5 +1,7 @@
 package com.cloudbees.fm.jenkins;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.model.Run;
 import io.rollout.configuration.Configuration;
 import io.rollout.configuration.comparison.ConfigurationComparator;
@@ -8,7 +10,6 @@ import io.rollout.configuration.persistence.ConfigurationPersister;
 import io.rollout.flags.models.ExperimentModel;
 import io.rollout.flags.models.TargetGroupModel;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -19,6 +20,7 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
     private final String environmentId;
     private transient Run<?, ?> run;
     private transient Configuration configuration; // lazy loaded. Do not use this directly. Use the getter instead.
+    private transient String rawConfiguration; // lazy loaded. Do not use this directly. Use the getter instead.
 
     FeatureManagementConfigurationAction(String environmentId) {
         this.environmentId = environmentId;
@@ -55,6 +57,14 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
 
     public String getEnvironmentId() {
         return environmentId;
+    }
+
+    public String getRawConfiguration() throws IOException {
+        return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(getConfiguration());
+    }
+
+    public String toJson(Object o) throws JsonProcessingException {
+        return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(o);
     }
 
     private Configuration getConfiguration() throws IOException {

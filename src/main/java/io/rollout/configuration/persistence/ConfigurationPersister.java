@@ -8,8 +8,11 @@ import io.rollout.configuration.LocalConfiguration;
 import io.rollout.configuration.json.ExperimentModelDeserializer;
 import io.rollout.flags.models.ExperimentModel;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import org.apache.commons.io.IOUtils;
 
 /**
  * The thing that's responsible for loading/saving {@link Configuration} objects to disk. It'll store them in the getRoot
@@ -44,5 +47,9 @@ public class ConfigurationPersister {
 
     public Configuration load(Run<?, ?> run, String environmentId) throws IOException {
         return mapper.readValue(configFile(run, environmentId), LocalConfiguration.class);
+    }
+
+    public String loadJsonConfiguration(Run<?, ?> run, String environmentId) throws IOException {
+        return IOUtils.toString(new FileInputStream(configFile(run, environmentId)), StandardCharsets.UTF_8);
     }
 }

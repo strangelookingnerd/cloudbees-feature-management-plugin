@@ -1,14 +1,21 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
   <l:layout title="Flag configuration">
     <st:include page="sidepanel.jelly" it="${it.owner}"/>
     <l:main-panel>
       <h1>Flag configurations for Environment ${it.environmentId}</h1>
       <p>The flag configuration consists of ${it.experiments.size()} experiments and ${it.targetGroups.size()} target groups.</p>
       <p>It was last modified on ${it.signedDate}.</p>
+      <h2>Full Configuration</h2>
+      <f:optionalBlock name="dynamic" title="Show full configuration">
+        <f:textarea value="${it.rawConfiguration}" readonly="true" codemirror-mode="javascript" codemirror-config="json:true, lineNumbers:true, foldGutter: true, gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']"/>
+      </f:optionalBlock>
+
       <j:if test="${it.previousSuccessfulBuild != null}">
         <h2>Changes since previous successful build configuration</h2>
-        Since build <a href="/jenkins/${it.previousSuccessfulBuild.getUrl()}flags/">#${it.previousSuccessfulBuild.getNumber()}</a> (${it.previousSuccessfulBuild.getTime()}), the following changes have occurred:
+        Since build <a href="/jenkins/${it.previousSuccessfulBuild.getUrl()}flags/">#${it.previousSuccessfulBuild.getNumber()}</a> (${it.previousSuccessfulBuild.getTime()}), the
+        following changes have occurred:
+
         <h3>Experiments</h3>
         <ul>
           <li>${it.configurationChanges.getExperimentComparison().getInFirstOnly().size()} experiments deleted/disabled.</li>
@@ -16,6 +23,46 @@
           <li>${it.configurationChanges.getExperimentComparison().getInBothButDifferent().size()} changed experiments.</li>
           <li>${it.configurationChanges.getExperimentComparison().getInBothAndTheSame().size()} unchanged experiments.</li>
         </ul>
+        <f:optionalBlock name="dynamic" title="Show experiment changes">
+          <j:if test="${!it.configurationChanges.getExperimentComparison().getInSecondOnly().isEmpty()}">
+            <h5>New/Enabled</h5>
+            <f:textarea value="${it.toJson(it.configurationChanges.getExperimentComparison().getInSecondOnly())}" readonly="true" codemirror-mode="javascript"
+                        codemirror-config="json:true, lineNumbers:true, foldGutter: true, gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']"/>
+          </j:if>
+
+          <j:if test="${!it.configurationChanges.getExperimentComparison().getInFirstOnly().isEmpty()}">
+            <h5>Deleted/Disabled</h5>
+            <f:textarea value="${it.toJson(it.configurationChanges.getExperimentComparison().getInFirstOnly())}" readonly="true" codemirror-mode="javascript"
+                        codemirror-config="json:true, lineNumbers:true, foldGutter: true, gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']"/>
+          </j:if>
+
+          <j:if test="${!it.configurationChanges.getExperimentComparison().getInBothButDifferent().isEmpty()}">
+            <h5>Modified</h5>
+            <div style="width: 100%">
+              <div style="float:left; width: 50%">
+                <p>Build #${it.previousSuccessfulBuild.getNumber()}</p>
+              </div>
+              <div style="float:left; width: 50%">
+                <p>This build</p>
+              </div>
+            </div>
+            <j:forEach var="comparison" items="${it.configurationChanges.getExperimentComparison().getInBothButDifferent()}">
+              <div style="width: 100%">
+                <div style="float:left; width: 50%">
+                  <f:textarea value="${it.toJson(comparison.getLeft())}" readonly="true" codemirror-mode="javascript"
+                              codemirror-config="json:true, lineNumbers:true, foldGutter: true, gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']"/>
+
+                </div>
+                <div style="float:left; width: 50%">
+                  <f:textarea value="${it.toJson(comparison.getRight())}" readonly="true" codemirror-mode="javascript"
+                              codemirror-config="json:true, lineNumbers:true, foldGutter: true, gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']"/>
+                </div>
+              </div>
+            </j:forEach>
+          </j:if>
+
+        </f:optionalBlock>
+
         <h3>Target Groups</h3>
         <ul>
           <li>${it.configurationChanges.getTargetGroupComparison().getInFirstOnly().size()} target groups deleted/disabled.</li>
@@ -23,6 +70,46 @@
           <li>${it.configurationChanges.getTargetGroupComparison().getInBothButDifferent().size()} changed target groups.</li>
           <li>${it.configurationChanges.getTargetGroupComparison().getInBothAndTheSame().size()} unchanged target groups.</li>
         </ul>
+        <f:optionalBlock name="dynamic" title="Show target group changes">
+          <j:if test="${!it.configurationChanges.getTargetGroupComparison().getInSecondOnly().isEmpty()}">
+            <h5>New/Enabled</h5>
+            <f:textarea value="${it.toJson(it.configurationChanges.getTargetGroupComparison().getInSecondOnly())}" readonly="true" codemirror-mode="javascript"
+                        codemirror-config="json:true, lineNumbers:true, foldGutter: true, gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']"/>
+          </j:if>
+
+          <j:if test="${!it.configurationChanges.getTargetGroupComparison().getInFirstOnly().isEmpty()}">
+            <h5>Deleted/Disabled</h5>
+            <f:textarea value="${it.toJson(it.configurationChanges.getTargetGroupComparison().getInFirstOnly())}" readonly="true" codemirror-mode="javascript"
+                        codemirror-config="json:true, lineNumbers:true, foldGutter: true, gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']"/>
+          </j:if>
+
+          <j:if test="${!it.configurationChanges.getTargetGroupComparison().getInBothButDifferent().isEmpty()}">
+            <h5>Modified</h5>
+            <div style="width: 100%">
+              <div style="float:left; width: 50%">
+                <p>Build #${it.previousSuccessfulBuild.getNumber()}</p>
+              </div>
+              <div style="float:left; width: 50%">
+                <p>This build</p>
+              </div>
+            </div>
+            <j:forEach var="comparison" items="${it.configurationChanges.getTargetGroupComparison().getInBothButDifferent()}">
+              <div style="width: 100%">
+                <div style="float:left; width: 50%">
+                  <f:textarea value="${it.toJson(comparison.getLeft())}" readonly="true" codemirror-mode="javascript"
+                              codemirror-config="json:true, lineNumbers:true, foldGutter: true, gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']"/>
+
+                </div>
+                <div style="float:left; width: 50%">
+                  <f:textarea value="${it.toJson(comparison.getRight())}" readonly="true" codemirror-mode="javascript"
+                              codemirror-config="json:true, lineNumbers:true, foldGutter: true, gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']"/>
+                </div>
+              </div>
+            </j:forEach>
+          </j:if>
+
+        </f:optionalBlock>
+
       </j:if>
     </l:main-panel>
   </l:layout>
