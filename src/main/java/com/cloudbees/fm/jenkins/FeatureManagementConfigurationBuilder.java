@@ -9,6 +9,7 @@ import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
 import com.cloudbees.plugins.credentials.domains.DomainRequirement;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -21,7 +22,6 @@ import hudson.model.TaskListener;
 import hudson.security.ACL;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
-import hudson.util.CopyOnWriteMap;
 import hudson.util.ListBoxModel;
 import io.rollout.configuration.Configuration;
 import io.rollout.configuration.ConfigurationFetcher;
@@ -30,8 +30,12 @@ import io.rollout.configuration.comparison.ConfigurationComparisonResult;
 import io.rollout.configuration.persistence.ConfigurationPersister;
 import io.rollout.publicapi.PublicApi;
 import io.rollout.publicapi.model.Application;
+import io.rollout.publicapi.model.DataPersister;
 import io.rollout.publicapi.model.Environment;
+import io.rollout.publicapi.model.Flag;
+import io.rollout.publicapi.model.TargetGroup;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,7 +49,6 @@ import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 /**
@@ -54,8 +57,6 @@ import org.kohsuke.stapler.QueryParameter;
 public class FeatureManagementConfigurationBuilder extends Builder implements SimpleBuildStep {
 
     private String credentialsId;
-    private String environmentId;
-    private String applicationId;
 
     private Application application;
     private Environment environment;
@@ -85,33 +86,54 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
             throws InterruptedException, IOException {
 
         try {
-            Configuration config = ConfigurationFetcher.getInstance().getConfiguration(environment.getKey());
             run.addAction(new FeatureManagementConfigurationAction(application, environment));
 
-            listener.getLogger().printf("Retrieved CloudBees Feature Management configuration for %s. %d Experiments, %d Target Groups. Last Updated: %s\n",
-                    environment, config.getExperiments().size(), config.getTargetGroups().size(), config.getSignedDate().toString());
-
-            // Save the config
-            ConfigurationPersister.getInstance().save(config, run, environment.getKey());
-
-            // Awesome, we saved the config. Now load the config from the last successful build
-            Run<?, ?> previousSuccessfulBuild = run.getPreviousSuccessfulBuild();
-            if (previousSuccessfulBuild != null) {
-                // read the file
-                try {
-                    Configuration oldConfig = ConfigurationPersister.getInstance().load(previousSuccessfulBuild, environment.getKey());
-
-                    ConfigurationComparisonResult comparison = new ConfigurationComparator().compare(oldConfig, config);
-                    listener.getLogger().println("configs are " + (comparison.areEqual() ? "not " : "") + "different");
-
-                } catch (Exception e) {
-                    listener.getLogger().printf("Could not load previous flag configuration from last successful build (%d)\n", previousSuccessfulBuild.getNumber());
-                }
-            } else {
-                listener.getLogger().println("There were no previous successful build to compare the flag configurations to");
-            }
+            doPostPerformEmbeddedConfigurationActions(run, listener);
+            doPostPerformPublicApiActions(run, listener);
         } catch (ParseException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void doPostPerformPublicApiActions(Run<?,?> run, TaskListener listener) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+
+        // Download and save the flags and target groups from the public API
+        String apiToken = ((DescriptorImpl)getDescriptor()).getApiToken(credentialsId);
+        List<Flag> flags = PublicApi.getInstance().getFlags(apiToken, application.getId(), environment.getName());
+        List<TargetGroup> targetGroups = PublicApi.getInstance().getTargetGroups(apiToken, application.getId());
+
+        // Save the flags and target groups to disk
+        DataPersister.writeValue(run.getRootDir(), getEnvironmentId(), DataPersister.EntityType.FLAG, flags);
+        DataPersister.writeValue(run.getRootDir(), getEnvironmentId(), DataPersister.EntityType.TARGET_GROUP, targetGroups);
+
+        listener.getLogger().printf("From the Public API, there were %d flags and %d target groups", flags.size(), targetGroups.size());
+    }
+
+    private void doPostPerformEmbeddedConfigurationActions(Run<?, ?> run, TaskListener listener) throws IOException, ParseException {
+        // Download and save the embedded configuration
+        Configuration config = ConfigurationFetcher.getInstance().getConfiguration(environment.getKey());
+        listener.getLogger().printf("Retrieved CloudBees Feature Management configuration for %s. %d Experiments, %d Target Groups. Last Updated: %s\n",
+                environment, config.getExperiments().size(), config.getTargetGroups().size(), config.getSignedDate().toString());
+
+        // Save the config
+        ConfigurationPersister.getInstance().save(config, run, environment.getKey());
+
+        // Awesome, we saved the config. Now load the config from the last successful build
+        Run<?, ?> previousSuccessfulBuild = run.getPreviousSuccessfulBuild();
+        if (previousSuccessfulBuild != null) {
+            // read the file
+            try {
+                Configuration oldConfig = ConfigurationPersister.getInstance().load(previousSuccessfulBuild, environment.getKey());
+
+                ConfigurationComparisonResult comparison = new ConfigurationComparator().compare(oldConfig, config);
+                listener.getLogger().println("configs are " + (comparison.areEqual() ? "not " : "") + "different");
+
+            } catch (Exception e) {
+                listener.getLogger().printf("Could not load previous flag configuration from last successful build (%d)\n", previousSuccessfulBuild.getNumber());
+            }
+        } else {
+            listener.getLogger().println("There were no previous successful build to compare the flag configurations to");
         }
     }
 

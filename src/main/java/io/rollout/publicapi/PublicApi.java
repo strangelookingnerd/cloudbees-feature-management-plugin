@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.rollout.publicapi.model.Application;
 import io.rollout.publicapi.model.Environment;
+import io.rollout.publicapi.model.Flag;
+import io.rollout.publicapi.model.TargetGroup;
 import java.io.IOException;
 import java.util.List;
 import io.rollout.okhttp3.HttpUrl;
@@ -65,4 +67,11 @@ public class PublicApi {
         return get(HttpUrl.parse("https://x-api.rollout.io/public-api/applications/" + applicationId + "/environments"), accessToken, new TypeReference<List<Environment>>(){});
     }
 
+    public List<Flag> getFlags(String accessToken, String applicationId, String environmentName) throws IOException {
+        return get(HttpUrl.parse("https://x-api.rollout.io/public-api/applications/" + applicationId + "/" + environmentName + "/flags"), accessToken, new TypeReference<List<Flag>>(){});
+    }
+
+    public List<TargetGroup> getTargetGroups(String accessToken, String applicationId) throws IOException {
+        return get(HttpUrl.parse("https://x-api.rollout.io/public-api/applications/" + applicationId + "/target-groups"), accessToken, new TypeReference<List<TargetGroup>>(){});
+    }
 }

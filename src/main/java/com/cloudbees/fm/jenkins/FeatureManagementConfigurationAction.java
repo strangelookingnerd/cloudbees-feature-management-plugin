@@ -1,6 +1,7 @@
 package com.cloudbees.fm.jenkins;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.model.Run;
 import io.rollout.configuration.Configuration;
@@ -10,7 +11,10 @@ import io.rollout.configuration.persistence.ConfigurationPersister;
 import io.rollout.flags.models.ExperimentModel;
 import io.rollout.flags.models.TargetGroupModel;
 import io.rollout.publicapi.model.Application;
+import io.rollout.publicapi.model.DataPersister;
 import io.rollout.publicapi.model.Environment;
+import io.rollout.publicapi.model.Flag;
+import io.rollout.publicapi.model.TargetGroup;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
@@ -88,6 +92,14 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
 
     public List<TargetGroupModel> getTargetGroups() throws IOException {
         return getConfiguration().getTargetGroups();
+    }
+
+    public List<Flag> getPublicApiFlags() throws IOException {
+        return DataPersister.readValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.FLAG, new TypeReference<List<Flag>>() {});
+    }
+
+    public List<TargetGroup> getPublicApiTargetGroups() throws IOException {
+        return DataPersister.readValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.TARGET_GROUP, new TypeReference<List<TargetGroup>>() {});
     }
 
     public Date getSignedDate() throws IOException {
