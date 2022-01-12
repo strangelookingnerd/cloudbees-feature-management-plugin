@@ -1,9 +1,12 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:c="/lib/credentials">
-    <f:entry field="environmentId" title="Environment ID">
-        <f:textbox/>
-    </f:entry>
     <f:entry field="credentialsId" title="${%Credentials}">
         <c:select/>
+    </f:entry>
+    <f:entry field="applicationId" title="Application">
+        <f:select />
+    </f:entry>
+    <f:entry field="environmentId" title="Environment">
+        <f:select />
     </f:entry>
 </j:jelly>

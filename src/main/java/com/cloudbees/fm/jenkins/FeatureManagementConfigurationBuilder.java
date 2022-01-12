@@ -5,47 +5,69 @@
 
 package com.cloudbees.fm.jenkins;
 
+import com.cloudbees.plugins.credentials.CredentialsMatchers;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
+import com.cloudbees.plugins.credentials.domains.DomainRequirement;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractProject;
+import hudson.model.Item;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.security.ACL;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
+import hudson.util.ListBoxModel;
 import io.rollout.configuration.Configuration;
 import io.rollout.configuration.ConfigurationFetcher;
 import io.rollout.configuration.comparison.ConfigurationComparator;
 import io.rollout.configuration.comparison.ConfigurationComparisonResult;
 import io.rollout.configuration.persistence.ConfigurationPersister;
+import io.rollout.publicapi.PublicApi;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
+import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.Symbol;
+import org.jenkinsci.plugins.plaincredentials.StringCredentials;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
 
 /**
  * 
  */
 public class FeatureManagementConfigurationBuilder extends Builder implements SimpleBuildStep {
 
-    private String environmentId;
+    private final String credentialsId;
+    private final String environmentId;
+    private final String applicationId;
 
     @DataBoundConstructor
-    public FeatureManagementConfigurationBuilder(String environmentId) {
+    public FeatureManagementConfigurationBuilder(String credentialsId, String applicationId, String environmentId) {
+        this.credentialsId = credentialsId;
+        this.applicationId = applicationId;
         this.environmentId = environmentId;
+    }
+
+    public String getCredentialsId() {
+        return credentialsId;
+    }
+
+    public String getApplicationId() {
+        return applicationId;
     }
 
     public String getEnvironmentId() {
         return environmentId;
-    }
-
-    @DataBoundSetter
-    public void setEnvironmentId(String environmentId) {
-        this.environmentId = environmentId;
     }
 
     @Override
@@ -103,5 +125,63 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }
+
+        public ListBoxModel doFillCredentialsIdItems(@AncestorInPath final Item context) {
+            if (context != null && !context.hasPermission(Item.CONFIGURE)) {
+                return new StandardListBoxModel();
+            }
+
+            return new StandardListBoxModel()
+                    .includeEmptyValue()
+                    .withMatching(CredentialsMatchers.anyOf(
+                                    CredentialsMatchers.instanceOf(StringCredentials.class)),
+                            CredentialsProvider.lookupCredentials(
+                                    StringCredentials.class,
+                                    context,
+                                    ACL.SYSTEM,
+                                    new ArrayList<DomainRequirement>()));
+        }
+
+        private String getApiToken(String credentialsId) {
+            if (StringUtils.isBlank(credentialsId)) {
+                throw new RuntimeException("No credentials Id");
+            }
+
+            List<StringCredentials> creds = CredentialsMatchers.filter(
+                    CredentialsProvider.lookupCredentials(StringCredentials.class,
+                            Jenkins.getInstance(), ACL.SYSTEM,
+                            Collections.emptyList()),
+                    CredentialsMatchers.withId(credentialsId)
+            );
+
+            return creds.stream().findFirst().map(c -> c.getSecret().getPlainText()).orElseThrow(() -> new RuntimeException("Could not find credential ID " + credentialsId));
+        }
+
+        public ListBoxModel doFillApplicationIdItems(@QueryParameter String credentialsId) throws IOException {
+            if (StringUtils.isBlank(credentialsId)) {
+                return null;
+            }
+
+            ListBoxModel items = new StandardListBoxModel().includeEmptyValue();
+
+            PublicApi.getInstance().listApplications(getApiToken(credentialsId))
+                    .forEach(application -> items.add(application.getName(), application.getId()));
+
+            return items;
+        }
+
+        public ListBoxModel doFillEnvironmentIdItems(@QueryParameter String credentialsId, @QueryParameter String applicationId) throws IOException {
+            if (StringUtils.isBlank(credentialsId) || StringUtils.isBlank(applicationId)) {
+                return null;
+            }
+
+            ListBoxModel items = new StandardListBoxModel().includeEmptyValue();
+
+            PublicApi.getInstance().listEnvironments(getApiToken(credentialsId), applicationId)
+                    .forEach(environment -> items.add(environment.getName(), environment.getKey()));
+
+            return items;
+        }
+
     }
 }
