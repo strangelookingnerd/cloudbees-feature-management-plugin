@@ -56,22 +56,16 @@
             <version>2.13.1-246.va8a9f3eaf46a</version>
         </dependency>
 
-        <!--Dependencies for farting around with the Rollout Configuration-->
+        <!--Dependencies for accessing Rollout Configuration-->
         <dependency>
             <groupId>io.rollout.rox</groupId>
             <artifactId>rox-java-core</artifactId>
-            <version>5.0.5-snapshot</version>
+            <!--
+                TODO: Update once Asaf releases 5.0.6 (or whatever version it is).
+                Build latest rox-java-core locally for now.
+            -->
+            <version>5.0.5</version>
         </dependency>
-
-        <!--    Hacks from locally installed gradle package - REMOVE THESE AS THEY SHOULD COME TRANSITIVELY FROM rox-java-core -->
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>3.9.0</version>
-            <scope>compile</scope>
-        </dependency>
-        <!--END HACKS-->
-
 
         <!-- Don't require Jenkins Pipeline. -->
         <dependency>

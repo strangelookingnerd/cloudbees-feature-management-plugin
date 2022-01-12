@@ -1,12 +1,12 @@
 package io.rollout.configuration;
 
+import io.rollout.okhttp3.HttpUrl;
+import io.rollout.okhttp3.OkHttpClient;
+import io.rollout.okhttp3.Request;
+import io.rollout.okhttp3.Response;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
-import okhttp3.HttpUrl;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
 
 /**
