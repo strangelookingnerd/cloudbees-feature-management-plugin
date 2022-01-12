@@ -18,7 +18,7 @@
         <java.level>8</java.level>
         <spotbugs.skip>true</spotbugs.skip> <!-- TODO: come back and fix these -->
     </properties>
-    <name>CloudBees Feature Management Jenkins Plugin</name>
+    <name>CloudBees Feature Management</name>
     <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
 
     <dependencyManagement>
