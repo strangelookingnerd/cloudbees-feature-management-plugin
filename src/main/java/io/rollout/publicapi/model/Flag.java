@@ -9,4 +9,8 @@ public class Flag extends HashMap<String, Object> {
     public String getName() {
         return get("name").toString();
     }
+
+    public boolean isEnabled() {
+        return (boolean) get("enabled");
+    }
 }

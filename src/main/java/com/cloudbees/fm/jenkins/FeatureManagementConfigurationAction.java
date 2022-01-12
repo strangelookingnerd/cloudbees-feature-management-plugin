@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 import jenkins.model.RunAction2;
 
 public class FeatureManagementConfigurationAction implements RunAction2 {
@@ -95,7 +96,9 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
     }
 
     public List<Flag> getPublicApiFlags() throws IOException {
-        return DataPersister.readValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.FLAG, new TypeReference<List<Flag>>() {});
+        return DataPersister.readValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.FLAG, new TypeReference<List<Flag>>() {})
+                .stream().filter(Flag::isEnabled)
+                .collect(Collectors.toList());
     }
 
     public List<TargetGroup> getPublicApiTargetGroups() throws IOException {
