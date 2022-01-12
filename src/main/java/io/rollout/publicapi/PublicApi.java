@@ -6,10 +6,10 @@ import io.rollout.publicapi.model.Application;
 import io.rollout.publicapi.model.Environment;
 import java.io.IOException;
 import java.util.List;
-import okhttp3.HttpUrl;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import io.rollout.okhttp3.HttpUrl;
+import io.rollout.okhttp3.OkHttpClient;
+import io.rollout.okhttp3.Request;
+import io.rollout.okhttp3.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
