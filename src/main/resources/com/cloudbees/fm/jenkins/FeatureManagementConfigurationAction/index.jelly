@@ -3,7 +3,7 @@
   <l:layout title="Flag configuration">
     <st:include page="sidepanel.jelly" it="${it.owner}"/>
     <l:main-panel>
-      <h1>Flag configurations for Environment ${it.environmentId}</h1>
+      <h1>Flag configurations for <a href="https://app.rollout.io/app/${it.application.id}">${it.application.name}</a>/<a href="https://app.rollout.io/app/${it.application.id}/environment/${it.environment.key}/flags">${it.environment.name}</a></h1>
       <p>The flag configuration consists of ${it.experiments.size()} experiments and ${it.targetGroups.size()} target groups.</p>
       <p>It was last modified on ${it.signedDate}.</p>
       <h2>Full Configuration</h2>

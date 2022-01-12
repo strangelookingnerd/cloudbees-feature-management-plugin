@@ -9,6 +9,8 @@ import io.rollout.configuration.comparison.ConfigurationComparisonResult;
 import io.rollout.configuration.persistence.ConfigurationPersister;
 import io.rollout.flags.models.ExperimentModel;
 import io.rollout.flags.models.TargetGroupModel;
+import io.rollout.publicapi.model.Application;
+import io.rollout.publicapi.model.Environment;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
@@ -17,13 +19,14 @@ import jenkins.model.RunAction2;
 
 public class FeatureManagementConfigurationAction implements RunAction2 {
 
-    private final String environmentId;
+    private final Application application;
+    private final Environment environment;
     private transient Run<?, ?> run;
     private transient Configuration configuration; // lazy loaded. Do not use this directly. Use the getter instead.
-    private transient String rawConfiguration; // lazy loaded. Do not use this directly. Use the getter instead.
 
-    FeatureManagementConfigurationAction(String environmentId) {
-        this.environmentId = environmentId;
+    FeatureManagementConfigurationAction(Application application, Environment environment) {
+        this.application = application;
+        this.environment = environment;
     }
 
     @Override
@@ -55,8 +58,12 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
         return run;
     }
 
-    public String getEnvironmentId() {
-        return environmentId;
+    public Application getApplication() {
+        return application;
+    }
+
+    public Environment getEnvironment() {
+        return environment;
     }
 
     public String getRawConfiguration() throws IOException {
@@ -69,7 +76,7 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
 
     private Configuration getConfiguration() throws IOException {
         if (configuration == null) {
-            configuration = ConfigurationPersister.getInstance().load(run, environmentId);
+            configuration = ConfigurationPersister.getInstance().load(run, environment.getKey());
         }
 
         return configuration;
@@ -101,6 +108,6 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
 
     private Configuration getPreviousSuccessfulConfig() throws IOException {
         // TODO - we can probably cache this and move the fetching from the Action to the Run
-        return ConfigurationPersister.getInstance().load(run.getPreviousSuccessfulBuild(), environmentId);
+        return ConfigurationPersister.getInstance().load(run.getPreviousSuccessfulBuild(), environment.getKey());
     }
 }

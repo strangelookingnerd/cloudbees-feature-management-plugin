@@ -21,6 +21,7 @@ import hudson.model.TaskListener;
 import hudson.security.ACL;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
+import hudson.util.CopyOnWriteMap;
 import hudson.util.ListBoxModel;
 import io.rollout.configuration.Configuration;
 import io.rollout.configuration.ConfigurationFetcher;
@@ -28,11 +29,15 @@ import io.rollout.configuration.comparison.ConfigurationComparator;
 import io.rollout.configuration.comparison.ConfigurationComparisonResult;
 import io.rollout.configuration.persistence.ConfigurationPersister;
 import io.rollout.publicapi.PublicApi;
+import io.rollout.publicapi.model.Application;
+import io.rollout.publicapi.model.Environment;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import org.apache.commons.lang3.StringUtils;
@@ -40,6 +45,7 @@ import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 /**
@@ -47,15 +53,18 @@ import org.kohsuke.stapler.QueryParameter;
  */
 public class FeatureManagementConfigurationBuilder extends Builder implements SimpleBuildStep {
 
-    private final String credentialsId;
-    private final String environmentId;
-    private final String applicationId;
+    private String credentialsId;
+    private String environmentId;
+    private String applicationId;
+
+    private Application application;
+    private Environment environment;
 
     @DataBoundConstructor
     public FeatureManagementConfigurationBuilder(String credentialsId, String applicationId, String environmentId) {
         this.credentialsId = credentialsId;
-        this.applicationId = applicationId;
-        this.environmentId = environmentId;
+        this.application = ((DescriptorImpl)getDescriptor()).applicationMap.get(applicationId);
+        this.environment = ((DescriptorImpl)getDescriptor()).environmentMap.get(environmentId);
     }
 
     public String getCredentialsId() {
@@ -63,11 +72,11 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
     }
 
     public String getApplicationId() {
-        return applicationId;
+        return application.getId();
     }
 
     public String getEnvironmentId() {
-        return environmentId;
+        return environment.getKey();
     }
 
     @Override
@@ -76,21 +85,21 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
             throws InterruptedException, IOException {
 
         try {
-            Configuration config = ConfigurationFetcher.getInstance().getConfiguration(environmentId);
-            run.addAction(new FeatureManagementConfigurationAction(environmentId));
+            Configuration config = ConfigurationFetcher.getInstance().getConfiguration(environment.getKey());
+            run.addAction(new FeatureManagementConfigurationAction(application, environment));
 
             listener.getLogger().printf("Retrieved CloudBees Feature Management configuration for %s. %d Experiments, %d Target Groups. Last Updated: %s\n",
-                    environmentId, config.getExperiments().size(), config.getTargetGroups().size(), config.getSignedDate().toString());
+                    environment, config.getExperiments().size(), config.getTargetGroups().size(), config.getSignedDate().toString());
 
             // Save the config
-            ConfigurationPersister.getInstance().save(config, run, environmentId);
+            ConfigurationPersister.getInstance().save(config, run, environment.getKey());
 
             // Awesome, we saved the config. Now load the config from the last successful build
             Run<?, ?> previousSuccessfulBuild = run.getPreviousSuccessfulBuild();
             if (previousSuccessfulBuild != null) {
                 // read the file
                 try {
-                    Configuration oldConfig = ConfigurationPersister.getInstance().load(previousSuccessfulBuild, environmentId);
+                    Configuration oldConfig = ConfigurationPersister.getInstance().load(previousSuccessfulBuild, environment.getKey());
 
                     ConfigurationComparisonResult comparison = new ConfigurationComparator().compare(oldConfig, config);
                     listener.getLogger().println("configs are " + (comparison.areEqual() ? "not " : "") + "different");
@@ -114,6 +123,10 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
     @Symbol("featureManagementConfig")
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
+
+        // A transient map of the ID->entity models, so that we can retrieved the
+        private final Map<String, Application> applicationMap = new HashMap<>();
+        private final Map<String, Environment> environmentMap = new HashMap<>();
 
         @Override
         @NonNull
@@ -165,7 +178,10 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
             ListBoxModel items = new StandardListBoxModel().includeEmptyValue();
 
             PublicApi.getInstance().listApplications(getApiToken(credentialsId))
-                    .forEach(application -> items.add(application.getName(), application.getId()));
+                    .forEach(application -> {
+                        applicationMap.put(application.getId(), application);
+                        items.add(application.getName(), application.getId());
+                    });
 
             return items;
         }
@@ -178,7 +194,10 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
             ListBoxModel items = new StandardListBoxModel().includeEmptyValue();
 
             PublicApi.getInstance().listEnvironments(getApiToken(credentialsId), applicationId)
-                    .forEach(environment -> items.add(environment.getName(), environment.getKey()));
+                    .forEach(environment -> {
+                        environmentMap.put(environment.getKey(), environment);
+                        items.add(environment.getName(), environment.getKey());
+                    });
 
             return items;
         }
