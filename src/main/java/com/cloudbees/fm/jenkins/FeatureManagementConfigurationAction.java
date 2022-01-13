@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.model.Run;
 import io.rollout.configuration.Configuration;
+import io.rollout.configuration.comparison.ComparisonResult;
 import io.rollout.configuration.comparison.ConfigurationComparator;
 import io.rollout.configuration.comparison.ConfigurationComparisonResult;
 import io.rollout.configuration.persistence.ConfigurationPersister;
@@ -15,12 +16,15 @@ import io.rollout.publicapi.model.DataPersister;
 import io.rollout.publicapi.model.Environment;
 import io.rollout.publicapi.model.Flag;
 import io.rollout.publicapi.model.TargetGroup;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import jenkins.model.RunAction2;
+import org.apache.commons.io.IOUtils;
 
 public class FeatureManagementConfigurationAction implements RunAction2 {
 
@@ -97,12 +101,21 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
 
     public List<Flag> getPublicApiFlags() throws IOException {
         return DataPersister.readValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.FLAG, new TypeReference<List<Flag>>() {})
-                .stream().filter(Flag::isEnabled)
+                .stream()
+//                .filter(Flag::isEnabled)
                 .collect(Collectors.toList());
     }
 
     public List<TargetGroup> getPublicApiTargetGroups() throws IOException {
         return DataPersister.readValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.TARGET_GROUP, new TypeReference<List<TargetGroup>>() {});
+    }
+
+    public String getRawFlags() throws IOException {
+        return IOUtils.toString(new FileInputStream(DataPersister.filename(run.getRootDir(), environment.getKey(), DataPersister.EntityType.FLAG)), StandardCharsets.UTF_8);
+    }
+
+    public String getRawTargetGroups() throws IOException {
+        return IOUtils.toString(new FileInputStream(DataPersister.filename(run.getRootDir(), environment.getKey(), DataPersister.EntityType.TARGET_GROUP)), StandardCharsets.UTF_8);
     }
 
     public Date getSignedDate() throws IOException {
@@ -124,5 +137,23 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
     private Configuration getPreviousSuccessfulConfig() throws IOException {
         // TODO - we can probably cache this and move the fetching from the Action to the Run
         return ConfigurationPersister.getInstance().load(run.getPreviousSuccessfulBuild(), environment.getKey());
+    }
+
+    public ComparisonResult<Flag> getFlagChanges() throws IOException {
+        return new ConfigurationComparator().compare(getPublicApiFlags(), getPreviousSuccessfulFlags());
+    }
+
+    public ComparisonResult<TargetGroup> getTargetGroupChanges() throws IOException {
+        return new ConfigurationComparator().compare(getPublicApiTargetGroups(), getPreviousSuccessfulTargetGroups());
+    }
+
+    private List<Flag> getPreviousSuccessfulFlags() throws IOException {
+        // TODO - we can probably cache this and move the fetching from the Action to the Run
+        return DataPersister.readValue(run.getPreviousSuccessfulBuild().getRootDir(), environment.getKey(), DataPersister.EntityType.FLAG, new TypeReference<List<Flag>>() {});
+    }
+
+    private List<TargetGroup> getPreviousSuccessfulTargetGroups() throws IOException {
+        // TODO - we can probably cache this and move the fetching from the Action to the Run
+        return DataPersister.readValue(run.getPreviousSuccessfulBuild().getRootDir(), environment.getKey(), DataPersister.EntityType.TARGET_GROUP, new TypeReference<List<TargetGroup>>() {});
     }
 }

@@ -1,0 +1,30 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" >
+  <d:taglib uri="local">
+    <d:tag name="tab">
+      <j:set var="match" value="${h.hyperlinkMatchesCurrentPage(href)}"/>
+      <span title="${(disabled &amp;&amp; disabledCause!=null) ? disabledCause : ''}">
+        <a class="plugin-management-tabs__tab
+                        ${match ? 'plugin-management-tabs__tab--selected' : '' }
+                        ${disabled ? 'plugin-management-tabs__tab--disabled' : '' }"
+           title="${title}"
+           href="${disabled ? '' : href}">
+          <d:invokeBody/>
+        </a>
+      </span>
+    </d:tag>
+  </d:taglib>
+
+  <section class="plugin-management-body">
+    <nav xmlns:local="local" >
+      <local:tab href="{it.rootUrl}" title="Data from embedded_configuration">
+        Embedded Configuration
+      </local:tab>
+      |
+      <local:tab href="${it.rootUrl}publicApi" title="Data from Public API">
+        Public API
+      </local:tab>
+    </nav>
+  </section>
+  <hr/>
+</j:jelly>

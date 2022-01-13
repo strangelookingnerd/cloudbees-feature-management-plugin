@@ -4,6 +4,8 @@ import com.google.common.annotations.VisibleForTesting;
 import io.rollout.configuration.Configuration;
 import io.rollout.flags.models.ExperimentModel;
 import io.rollout.flags.models.TargetGroupModel;
+import io.rollout.publicapi.model.Flag;
+import io.rollout.publicapi.model.TargetGroup;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,8 +31,7 @@ public class ConfigurationComparator {
         return new ConfigurationComparisonResult(experimentModelComparisonResult, targetGroupModelComparisonResult);
     }
 
-    @VisibleForTesting
-    <T> ComparisonResult<T> compare(List<T> first, List<T> second) {
+    public <T> ComparisonResult<T> compare(List<T> first, List<T> second) {
         ComparisonResult<T> result = new ComparisonResult<>();
 
         // Work through the experiments first.
@@ -69,6 +70,10 @@ public class ConfigurationComparator {
             return ((ExperimentModel) model).getId();
         } else if (model instanceof TargetGroupModel) {
             return ((TargetGroupModel) model).getId();
+        } else if (model instanceof Flag) {
+            return ((Flag)model).getName();
+        } else if (model instanceof TargetGroup) {
+            return ((TargetGroup)model).getName();
         } else {
             throw new RuntimeException("Cannot do getId() on " + model.getClass().getSimpleName());
         }

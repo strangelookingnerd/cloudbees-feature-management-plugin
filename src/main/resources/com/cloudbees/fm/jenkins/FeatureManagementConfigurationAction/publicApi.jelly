@@ -1,0 +1,133 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:cbfm="/lib/cbfm">
+  <l:layout title="Flag configuration">
+    <st:include page="sidepanel.jelly" it="${it.owner}"/>
+    <l:main-panel>
+      <cbfm:tabs/>
+      <h1>Flag configurations for <a href="https://app.rollout.io/app/${it.application.id}">${it.application.name}</a>/<a href="https://app.rollout.io/app/${it.application.id}/environment/${it.environment.key}/flags">${it.environment.name}</a></h1>
+      <p>The flag configuration consists of ${it.publicApiFlags.size()} flags and ${it.publicApiTargetGroups.size()} target groups.</p>
+<!--      <p>It was last modified on ${it.signedDate}.</p>-->
+      <h2>Full Configuration</h2>
+      <f:optionalBlock name="dynamic" title="Show full configuration">
+        <h5>Flags</h5>
+        Large text blocks have problems with f:textarea. Just use textarea directly.
+        <textarea readonly="true" rows="25" class="codemirror setting-input" style="width: 100%" codemirror-mode="javascript" codemirror-config="json:true, lineNumbers:true">
+          ${it.rawFlags}
+        </textarea>
+
+        <h5>Target Groups</h5>
+        <textarea readonly="true" rows="25" class="codemirror setting-input" style="width: 100%" codemirror-mode="javascript" codemirror-config="json:true, lineNumbers:true">
+          ${it.rawTargetGroups}
+        </textarea>
+      </f:optionalBlock>
+
+      <j:if test="${it.previousSuccessfulBuild != null}">
+        <h2>Changes since previous successful build configuration</h2>
+        Since build <a href="/jenkins/${it.previousSuccessfulBuild.getUrl()}flags/publicApi">#${it.previousSuccessfulBuild.getNumber()}</a> (${it.previousSuccessfulBuild.getTime()}), the
+        following changes have occurred:
+
+        <h3>Flags</h3>
+        <ul>
+          <li>${it.flagChanges.getInFirstOnly().size()} flags deleted/disabled.</li>
+          <li>${it.flagChanges.getInSecondOnly().size()} flags created/enabled.</li>
+          <li>${it.flagChanges.getInBothButDifferent().size()} changed flags.</li>
+          <li>${it.flagChanges.getInBothAndTheSame().size()} unchanged flags.</li>
+        </ul>
+        <f:optionalBlock name="dynamic" title="Show flag changes">
+          <j:if test="${!it.flagChanges.getInSecondOnly().isEmpty()}">
+            <h5>New/Enabled</h5>
+            <f:textarea value="${it.toJson(it.flagChanges.getInSecondOnly())}" readonly="true" codemirror-mode="javascript"
+                        codemirror-config="json:true, lineNumbers:true"/>
+          </j:if>
+
+          <j:if test="${!it.flagChanges.getInFirstOnly().isEmpty()}">
+            <h5>Deleted/Disabled</h5>
+            <f:textarea value="${it.toJson(it.flagChanges.getInFirstOnly())}" readonly="true" codemirror-mode="javascript"
+                        codemirror-config="json:true, lineNumbers:true"/>
+          </j:if>
+
+          <j:if test="${!it.flagChanges.getInBothButDifferent().isEmpty()}">
+            <h5>Modified</h5>
+            <div style="width: 100%">
+              <div style="float:left; width: 50%">
+                <p>Build #${it.previousSuccessfulBuild.getNumber()}</p>
+              </div>
+              <div style="float:left; width: 50%">
+                <p>This build</p>
+              </div>
+            </div>
+            <j:forEach var="comparison" items="${it.flagChanges.getInBothButDifferent()}">
+              <div style="width: 100%">
+                <div style="float:left; width: 50%">
+                  <f:textarea value="${it.toJson(comparison.getLeft())}" readonly="true" codemirror-mode="javascript"
+                              codemirror-config="json:true, lineNumbers:true"/>
+
+                </div>
+                <div style="float:left; width: 50%">
+                  <f:textarea value="${it.toJson(comparison.getRight())}" readonly="true" codemirror-mode="javascript"
+                              codemirror-config="json:true, lineNumbers:true"/>
+                </div>
+              </div>
+            </j:forEach>
+          </j:if>
+
+        </f:optionalBlock>
+
+        <h3>Target Groups</h3>
+        <ul>
+          <li>${it.targetGroupChanges.getInFirstOnly().size()} target groups deleted/disabled.</li>
+          <li>${it.targetGroupChanges.getInSecondOnly().size()} target groups created/enabled.</li>
+          <li>${it.targetGroupChanges.getInBothButDifferent().size()} changed target groups.</li>
+          <li>${it.targetGroupChanges.getInBothAndTheSame().size()} unchanged target groups.</li>
+        </ul>
+        <f:optionalBlock name="dynamic" title="Show target group changes">
+          <j:if test="${!it.targetGroupChanges.getInSecondOnly().isEmpty()}">
+            <h5>New/Enabled</h5>
+            <f:textarea value="${it.toJson(it.targetGroupChanges.getInSecondOnly())}" readonly="true" codemirror-mode="javascript"
+                        codemirror-config="json:true, lineNumbers:true"/>
+          </j:if>
+
+          <j:if test="${!it.targetGroupChanges.getInFirstOnly().isEmpty()}">
+            <h5>Deleted/Disabled</h5>
+            <f:textarea value="${it.toJson(it.targetGroupChanges.getInFirstOnly())}" readonly="true" codemirror-mode="javascript"
+                        codemirror-config="json:true, lineNumbers:true"/>
+          </j:if>
+
+          <j:if test="${!it.targetGroupChanges.getInBothButDifferent().isEmpty()}">
+            <h5>Modified</h5>
+            <div style="width: 100%">
+              <div style="float:left; width: 50%">
+                <p>Build #${it.previousSuccessfulBuild.getNumber()}</p>
+              </div>
+              <div style="float:left; width: 50%">
+                <p>This build</p>
+              </div>
+            </div>
+            <j:forEach var="comparison" items="${it.targetGroupChanges.getInBothButDifferent()}">
+              <div style="width: 100%">
+                <div style="float:left; width: 50%">
+                  <f:textarea value="${it.toJson(comparison.getLeft())}" readonly="true" codemirror-mode="javascript"
+                              codemirror-config="json:true, lineNumbers:true"/>
+
+                </div>
+                <div style="float:left; width: 50%">
+                  <f:textarea value="${it.toJson(comparison.getRight())}" readonly="true" codemirror-mode="javascript"
+                              codemirror-config="json:true, lineNumbers:true"/>
+                </div>
+              </div>
+            </j:forEach>
+          </j:if>
+
+        </f:optionalBlock>
+
+
+<!--        HACK - render a f:textarea to make the basic textarea work. 🤷 -->
+        <hr/>
+        <f:optionalBlock name="hack" title="Ignore this - it's a hack">
+          <f:textarea value="${it.toJson(comparison.getLeft())}" readonly="true" codemirror-mode="javascript"
+                      codemirror-config="json:true, lineNumbers:true"/>
+        </f:optionalBlock>
+      </j:if>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

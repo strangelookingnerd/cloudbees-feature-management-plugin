@@ -35,7 +35,6 @@ import io.rollout.publicapi.model.Environment;
 import io.rollout.publicapi.model.Flag;
 import io.rollout.publicapi.model.TargetGroup;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;

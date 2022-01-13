@@ -20,14 +20,14 @@ public class DataPersister {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     public static void writeValue(File dir, String environmentId, EntityType entityType, Object value) throws IOException {
-        mapper.writeValue(filename(dir, environmentId, entityType), value);
+        mapper.writerWithDefaultPrettyPrinter().writeValue(filename(dir, environmentId, entityType), value);
     }
 
     public static <T> T readValue(File dir, String environmentId, EntityType entityType, TypeReference<T> typeReference) throws IOException {
         return mapper.readValue(filename(dir, environmentId, entityType), typeReference);
     }
 
-    private static File filename(File dir, String environmentId, EntityType entityType) {
+    public static File filename(File dir, String environmentId, EntityType entityType) {
         ObjectUtils.requireNonEmpty(environmentId);
         ObjectUtils.requireNonEmpty(entityType);
         return Paths.get(dir.getAbsolutePath(), environmentId + "-" + entityType + ".json").toFile();
