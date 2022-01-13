@@ -3,10 +3,9 @@ package com.cloudbees.fm.jenkins;
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
-import com.cloudbees.plugins.credentials.domains.DomainRequirement;
+import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -31,7 +30,6 @@ import io.rollout.publicapi.model.Flag;
 import io.rollout.publicapi.model.TargetGroup;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -150,20 +148,29 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
             return true;
         }
 
-        public ListBoxModel doFillCredentialsIdItems(@AncestorInPath final Item context) {
-            if (context != null && !context.hasPermission(Item.CONFIGURE)) {
-                return new StandardListBoxModel();
+        public ListBoxModel doFillCredentialsIdItems(
+                @AncestorInPath Item item,
+                @QueryParameter String credentialsId) {
+            StandardListBoxModel result = new StandardListBoxModel();
+            if (item == null) {
+                if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+                    return result.includeCurrentValue(credentialsId);
+                }
+            } else {
+                if (!item.hasPermission(Item.EXTENDED_READ)
+                        && !item.hasPermission(CredentialsProvider.USE_ITEM)) {
+                    return result.includeCurrentValue(credentialsId);
+                }
             }
-
-            return new StandardListBoxModel()
+            return result
                     .includeEmptyValue()
-                    .withMatching(CredentialsMatchers.anyOf(
-                                    CredentialsMatchers.instanceOf(StringCredentials.class)),
-                            CredentialsProvider.lookupCredentials(
-                                    StringCredentials.class,
-                                    context,
-                                    ACL.SYSTEM,
-                                    new ArrayList<DomainRequirement>()));
+                    .includeMatchingAs(ACL.SYSTEM,
+                            item,
+                            StringCredentials.class,
+                            // No domain requirements
+                            URIRequirementBuilder.create().build(),
+                            CredentialsMatchers.always())
+                    .includeCurrentValue(credentialsId);
         }
 
         private String getApiToken(String credentialsId) {
