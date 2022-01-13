@@ -80,9 +80,9 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
     }
 
     @Override
-    public void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull EnvVars env,
-                        @NonNull Launcher launcher, @NonNull TaskListener listener)
-            throws InterruptedException, IOException {
+    public void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull Launcher launcher,
+                        @NonNull TaskListener listener)
+            throws IOException {
 
         try {
             run.addAction(new FeatureManagementConfigurationAction(application, environment));
@@ -134,11 +134,6 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
         } else {
             listener.getLogger().println("There were no previous successful build to compare the flag configurations to");
         }
-    }
-
-    @Override
-    public boolean requiresWorkspace() {
-        return false; // Jesse said this was important
     }
 
     @Symbol("featureManagementConfig")

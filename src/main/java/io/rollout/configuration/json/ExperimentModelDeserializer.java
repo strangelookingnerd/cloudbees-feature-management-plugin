@@ -1,11 +1,11 @@
 package io.rollout.configuration.json;
 
-import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.collect.Sets;
 import io.rollout.flags.models.DeploymentConfiguration;
 import io.rollout.flags.models.ExperimentModel;
 import io.rollout.flags.models.FeatureFlagModel;
@@ -36,24 +36,29 @@ public class ExperimentModelDeserializer extends StdDeserializer<ExperimentModel
         JsonNode node = jsonParser.getCodec().readTree(jsonParser);
 
         String name = node.get("name").asText();
-        DeploymentConfiguration deploymentConfiguration = deserializationContext.readTreeAsValue(node.get("deploymentConfiguration"), DeploymentConfiguration.class);
-
+        DeploymentConfiguration deploymentConfiguration = toDeploymentConfiguration(node.get("deploymentConfiguration"));
+        
         ArrayNode flagsNode = (ArrayNode) node.get("featureFlags");
         List<FeatureFlagModel> featureFlags = StreamSupport.stream(flagsNode.spliterator(), false)
-                .map(n -> {
-                    try {
-                        return deserializationContext.readTreeAsValue(n, FeatureFlagModel.class);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).collect(Collectors.toList());
-
+                .map(n -> toFeatureFlagModel(n)).collect(Collectors.toList());
 
         String id = node.get("id").asText();
         boolean isArchived = node.get("archived").asBoolean(); // this is the problematic step
         boolean isSticky = node.get("sticky").asBoolean(); // this one too
-        Set<String> labels = deserializationContext.readTreeAsValue(node.get("labels"), Set.class);
+        Set<String> labels = toLabels((ArrayNode) node.get("labels"));
         String stickinessProperty = node.get("stickinessProperty").asText();
         return new ExperimentModel(name, deploymentConfiguration, featureFlags, id, isArchived, isSticky, labels, stickinessProperty);
+    }
+
+    private DeploymentConfiguration toDeploymentConfiguration(JsonNode deploymentConfiguration) {
+        return new DeploymentConfiguration(deploymentConfiguration.get("condition").asText());
+    }
+
+    private FeatureFlagModel toFeatureFlagModel(JsonNode featureFlagModel) {
+        return new FeatureFlagModel(featureFlagModel.get("name").asText(), featureFlagModel.get("value").asBoolean());
+    }
+
+    private Set<String> toLabels(ArrayNode labels) {
+        return Sets.newHashSet(labels.elements()).stream().map(JsonNode::asText).collect(Collectors.toSet());
     }
 }
