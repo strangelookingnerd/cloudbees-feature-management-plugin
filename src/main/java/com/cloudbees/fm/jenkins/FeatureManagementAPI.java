@@ -1,8 +1,3 @@
-/*
- * Copyright 2021 CloudBees, Inc.
- * All rights reserved.
- */
-
 package com.cloudbees.fm.jenkins;
 
 import java.io.IOException;
