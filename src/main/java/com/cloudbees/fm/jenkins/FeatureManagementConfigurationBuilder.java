@@ -16,6 +16,7 @@ import hudson.model.TaskListener;
 import hudson.security.ACL;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
+import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import io.rollout.configuration.Configuration;
 import io.rollout.configuration.ConfigurationFetcher;
@@ -32,8 +33,12 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import org.apache.commons.lang3.StringUtils;
@@ -133,9 +138,13 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
-        // A transient map of the ID->entity models, so that we can retrieved the
+        private static final Logger LOGGER = Logger.getLogger(DescriptorImpl.class.getName());
+
+        // A transient map of the ID->entity models, so that we can retrieve something that I've forgotten
         private final Map<String, Application> applicationMap = new HashMap<>();
         private final Map<String, Environment> environmentMap = new HashMap<>();
+        private transient Set<String> validCredentialIds = new HashSet<>();
+        private transient Set<String> invalidCredentialIds = new HashSet<>();
 
         @Override
         @NonNull
@@ -173,6 +182,27 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
                     .includeCurrentValue(credentialsId);
         }
 
+        public FormValidation doCheckCredentialsId(@QueryParameter String credentialsId) {
+            // Checking whether the credential is valid is a PITA as CBFM rate limits the API calls
+            // Also, this method gets called many times and that overloads the API rate limits. Use a stored list of valid or invalid IDs.
+            if (validCredentialIds.contains(credentialsId)) {
+                return FormValidation.ok();
+            } else if (invalidCredentialIds.contains(credentialsId)) {
+                return FormValidation.error("API Token is invalid");
+            } else {
+                // We have not checked the credential yet. Check it now by listing applications
+                try {
+                    PublicApi.getInstance().listApplications(getApiToken(credentialsId));
+                    validCredentialIds.add(credentialsId);
+                    return FormValidation.ok();
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "API token is invalid", e);
+                    invalidCredentialIds.add(credentialsId);
+                    return FormValidation.error("API token is invalid", e);
+                }
+            }
+        }
+
         private String getApiToken(String credentialsId) {
             if (StringUtils.isBlank(credentialsId)) {
                 throw new RuntimeException("No credentials Id");
@@ -189,26 +219,31 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
         }
 
         public ListBoxModel doFillApplicationIdItems(@QueryParameter String credentialsId) throws IOException {
-            if (StringUtils.isBlank(credentialsId)) {
+            if (StringUtils.isBlank(credentialsId) || invalidCredentialIds.contains(credentialsId)) {
                 return null;
             }
 
-            ListBoxModel items = new StandardListBoxModel().includeEmptyValue();
+            try {
+                ListBoxModel items = new StandardListBoxModel().includeEmptyValue();
 
-            PublicApi.getInstance().listApplications(getApiToken(credentialsId))
-                    .forEach(application -> {
-                        applicationMap.put(application.getId(), application);
-                        items.add(application.getName(), application.getId());
-                    });
+                PublicApi.getInstance().listApplications(getApiToken(credentialsId))
+                        .forEach(application -> {
+                            applicationMap.put(application.getId(), application);
+                            items.add(application.getName(), application.getId());
+                        });
 
-            return items;
+                return items;
+            } catch (Exception e) {
+                return null;
+            }
         }
 
         public ListBoxModel doFillEnvironmentIdItems(@QueryParameter String credentialsId, @QueryParameter String applicationId) throws IOException {
-            if (StringUtils.isBlank(credentialsId) || StringUtils.isBlank(applicationId)) {
+            if (StringUtils.isBlank(credentialsId) || invalidCredentialIds.contains(credentialsId) || StringUtils.isBlank(applicationId)) {
                 return null;
             }
 
+            try {
             ListBoxModel items = new StandardListBoxModel().includeEmptyValue();
 
             PublicApi.getInstance().listEnvironments(getApiToken(credentialsId), applicationId)
@@ -218,6 +253,9 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
                     });
 
             return items;
+            } catch (Exception e) {
+                return null;
+            }
         }
 
     }
