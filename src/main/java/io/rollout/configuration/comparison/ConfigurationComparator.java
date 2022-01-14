@@ -33,17 +33,17 @@ public class ConfigurationComparator {
 
         ids.forEach(id -> {
             T firstModel = firstById.get(id);
-            T secgondModel = secondById.get(id);
-            if (firstModel != null && secgondModel != null) {
-                if (firstModel.equals(secgondModel)) {
+            T secondModel = secondById.get(id);
+            if (firstModel != null && secondModel != null) {
+                if (firstModel.equals(secondModel)) {
                     result.addInBothAndTheSame(firstModel);
                 } else {
-                    result.addInBothButDifferent(firstModel, secgondModel);
+                    result.addInBothButDifferent(firstModel, secondModel);
                 }
             } else if (firstModel != null) {
                 result.addInFirstOnly(firstModel);
-            } else if (secgondModel != null) {
-                result.addInSecondOnly(secgondModel);
+            } else if (secondModel != null) {
+                result.addInSecondOnly(secondModel);
             } else {
                 throw new RuntimeException("Logic fail. We didn't handle experiment " + id);
             }
