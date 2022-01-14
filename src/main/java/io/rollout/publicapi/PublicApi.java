@@ -8,10 +8,10 @@ import io.rollout.publicapi.model.Flag;
 import io.rollout.publicapi.model.TargetGroup;
 import java.io.IOException;
 import java.util.List;
-import io.rollout.okhttp3.HttpUrl;
-import io.rollout.okhttp3.OkHttpClient;
-import io.rollout.okhttp3.Request;
-import io.rollout.okhttp3.Response;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 

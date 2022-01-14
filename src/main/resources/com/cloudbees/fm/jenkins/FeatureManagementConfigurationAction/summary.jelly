@@ -1,17 +1,9 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <t:summary icon="/plugin/cloudbees-feature-management/images/cloudbees.svg">
-        <h5>Embedded configuration</h5>
-        <p><a href="flags">Flag configuration</a> consists of <b>${it.experiments.size()} experiments</b> and <b>${it.targetGroups.size()} target groups</b></p>
-        <p>Last updated: <b>${it.signedDate} (UTC)</b></p>
+        <p><a href="flags">Flag configuration</a> consists of <b>${it.flags.size()} flags</b> and <b>${it.targetGroups.size()} target groups</b></p>
         <j:if test="${it.previousSuccessfulBuild != null}">
-            <p>There ${it.isUnchanged ? "are no" : "have been"} changes since the previous successful build (<a href="/jenkins/${it.previousSuccessfulBuild.getUrl()}">#${it.previousSuccessfulBuild.getNumber()}</a>)</p>
+            <p>There ${it.hasChanged ? "have been" : "are no"} changes since the previous successful build (<a href="/jenkins/${it.previousSuccessfulBuild.getUrl()}">#${it.previousSuccessfulBuild.getNumber()}</a>)</p>
         </j:if>
-        <j:if test="${!it.previousSuccessfulBuild == null}">
-            <p>No previous successful build could be found to compare with</p>
-        </j:if>
-        <h5>Public API</h5>
-        <p><a href="flags">Flag configuration</a> consists of <b>${it.publicApiFlags.size()} flags</b> and <b>${it.publicApiTargetGroups.size()} target groups</b>
-        </p>
     </t:summary>
 </j:jelly>

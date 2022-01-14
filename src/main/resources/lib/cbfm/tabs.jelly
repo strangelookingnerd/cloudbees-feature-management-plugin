@@ -17,12 +17,12 @@
 
   <section class="plugin-management-body">
     <nav xmlns:local="local" >
-      <local:tab href="{it.rootUrl}" title="Data from embedded_configuration">
-        Embedded configuration
+      <local:tab href="${it.rootUrl}" title="Flag and target group configuration">
+        Configuration
       </local:tab>
       |
-      <local:tab href="${it.rootUrl}publicApi" title="Data from Public API">
-        Public API
+      <local:tab href="${it.rootUrl}audit" title="Audit logs">
+        Audit Log (TODO)
       </local:tab>
     </nav>
   </section>

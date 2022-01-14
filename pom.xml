@@ -55,16 +55,10 @@
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>jackson2-api</artifactId>
         </dependency>
-
-        <!--Dependencies for accessing Rollout Configuration-->
         <dependency>
-            <groupId>io.rollout.rox</groupId>
-            <artifactId>rox-java-core</artifactId>
-            <!--
-                TODO: Update once Asaf releases 5.0.6 (or whatever version it is).
-                Build latest rox-java-core locally for now.
-            -->
-            <version>5.0.5</version>
+            <groupId>io.jenkins.plugins</groupId>
+            <artifactId>okhttp-api</artifactId>
+            <version>3.12.12.2</version>
         </dependency>
 
         <dependency>
