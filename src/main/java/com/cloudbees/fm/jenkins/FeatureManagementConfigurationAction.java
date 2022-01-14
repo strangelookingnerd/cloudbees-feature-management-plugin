@@ -15,6 +15,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import jenkins.model.Jenkins;
 import jenkins.model.RunAction2;
 import org.apache.commons.io.IOUtils;
 
@@ -110,5 +111,9 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
     private List<TargetGroup> getPreviousSuccessfulTargetGroups() throws IOException {
         // TODO - we can probably cache this and move the fetching from the Action to the Run
         return DataPersister.readValue(run.getPreviousSuccessfulBuild().getRootDir(), environment.getKey(), DataPersister.EntityType.TARGET_GROUP, new TypeReference<List<TargetGroup>>() {});
+    }
+
+    public String getUrl() {
+        return Jenkins.get().getRootUrl() + run.getUrl() + getUrlName() + "/";
     }
 }
