@@ -10,7 +10,8 @@ import org.apache.commons.lang3.ObjectUtils;
 public class DataPersister {
     public enum EntityType {
         FLAG,
-        TARGET_GROUP
+        TARGET_GROUP,
+        AUDIT_LOG
     }
 
     private DataPersister() {

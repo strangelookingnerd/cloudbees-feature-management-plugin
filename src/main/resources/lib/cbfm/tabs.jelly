@@ -22,7 +22,7 @@
       </local:tab>
       |
       <local:tab href="${it.url}audit" title="Audit logs">
-        Audit log (TODO)
+        Audit logs
       </local:tab>
     </nav>
   </section>

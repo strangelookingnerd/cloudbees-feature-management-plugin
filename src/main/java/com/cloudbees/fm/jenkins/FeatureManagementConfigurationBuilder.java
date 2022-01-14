@@ -19,12 +19,14 @@ import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import io.rollout.publicapi.PublicApi;
 import io.rollout.publicapi.model.Application;
+import io.rollout.publicapi.model.AuditLog;
 import io.rollout.publicapi.model.DataPersister;
 import io.rollout.publicapi.model.Environment;
 import io.rollout.publicapi.model.Flag;
 import io.rollout.publicapi.model.TargetGroup;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -75,12 +77,16 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
 
         run.addAction(new FeatureManagementConfigurationAction(application, environment));
 
-        doPostPerformPublicApiActions(run, listener);
+        String apiToken = ((DescriptorImpl)getDescriptor()).getApiToken(credentialsId);
+        downloadAndSaveFlags(apiToken, run, listener);
+        if (run.getPreviousSuccessfulBuild() != null) {
+            // Audit logs (to show changes) are only relevant when comparing against a previous (successful) build.
+            downloadAndSaveAuditLogs(apiToken, run, listener, run.getPreviousSuccessfulBuild().getTime());
+        }
     }
 
-    private void doPostPerformPublicApiActions(Run<?,?> run, TaskListener listener) throws IOException {
+    private void downloadAndSaveFlags(String apiToken, Run<?,?> run, TaskListener listener) throws IOException {
         // Download and save the flags and target groups from the public API
-        String apiToken = ((DescriptorImpl)getDescriptor()).getApiToken(credentialsId);
         List<Flag> flags = PublicApi.getInstance().getFlags(apiToken, application.getId(), environment.getName());
         List<TargetGroup> targetGroups = PublicApi.getInstance().getTargetGroups(apiToken, application.getId());
 
@@ -88,7 +94,13 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
         DataPersister.writeValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.FLAG, flags);
         DataPersister.writeValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.TARGET_GROUP, targetGroups);
 
-        listener.getLogger().printf("From the Public API, there were %d flags and %d target groups", flags.size(), targetGroups.size());
+        listener.getLogger().printf("There are %d flags and %d target groups\n", flags.size(), targetGroups.size());
+    }
+
+    private void downloadAndSaveAuditLogs(String apiToken, Run<?,?> run, TaskListener listener, Date startDate) throws IOException {
+        List<AuditLog> auditLogs = PublicApi.getInstance().getAuditLogs(apiToken, application.getId(), environment.getName(), startDate);
+        DataPersister.writeValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.AUDIT_LOG, auditLogs);
+        listener.getLogger().printf("There were %d changes from the audit logs", auditLogs.size());
     }
 
     @Symbol("featureManagementConfig")

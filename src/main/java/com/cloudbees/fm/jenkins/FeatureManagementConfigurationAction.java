@@ -1,5 +1,6 @@
 package com.cloudbees.fm.jenkins;
 
+import com.cloudbees.fm.jenkins.ui.AuditLogMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,6 +8,7 @@ import hudson.model.Run;
 import io.rollout.configuration.comparison.ComparisonResult;
 import io.rollout.configuration.comparison.ConfigurationComparator;
 import io.rollout.publicapi.model.Application;
+import io.rollout.publicapi.model.AuditLog;
 import io.rollout.publicapi.model.DataPersister;
 import io.rollout.publicapi.model.Environment;
 import io.rollout.publicapi.model.Flag;
@@ -77,6 +79,14 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
 
     public List<TargetGroup> getTargetGroups() throws IOException {
         return DataPersister.readValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.TARGET_GROUP, new TypeReference<List<TargetGroup>>() {});
+    }
+
+    public List<AuditLog> getAuditLogs() throws IOException {
+        return DataPersister.readValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.AUDIT_LOG, new TypeReference<List<AuditLog>>() {});
+    }
+
+    public static AuditLogMessage prettify(AuditLog auditLog) {
+        return new AuditLogMessage(auditLog.getMessage());
     }
 
     public String getRawFlags() throws IOException {
