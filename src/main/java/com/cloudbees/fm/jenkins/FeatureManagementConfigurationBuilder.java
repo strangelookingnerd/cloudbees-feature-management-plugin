@@ -149,7 +149,7 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
         @Override
         @NonNull
         public String getDisplayName() {
-            return "CloudBees Feature Management Configuration";
+            return "CloudBees Feature Management configuration";
         }
 
         @Override

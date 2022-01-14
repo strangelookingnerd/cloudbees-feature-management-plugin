@@ -7,22 +7,22 @@
       <h1>Flag configurations for <a href="https://app.rollout.io/app/${it.application.id}">${it.application.name}</a>/<a href="https://app.rollout.io/app/${it.application.id}/environment/${it.environment.key}/flags">${it.environment.name}</a></h1>
       <p>The flag configuration consists of ${it.experiments.size()} experiments and ${it.targetGroups.size()} target groups.</p>
       <p>It was last modified on ${it.signedDate}.</p>
-      <h2>Full Configuration</h2>
+      <h2>Full configuration</h2>
       <f:optionalBlock name="dynamic" title="Show full configuration">
         <f:textarea value="${it.rawConfiguration}" readonly="true" codemirror-mode="javascript" codemirror-config="json:true, lineNumbers:true, foldGutter: true, gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']"/>
       </f:optionalBlock>
 
       <j:if test="${it.previousSuccessfulBuild != null}">
         <h2>Changes since previous successful build configuration</h2>
-        Since build <a href="/jenkins/${it.previousSuccessfulBuild.getUrl()}flags/">#${it.previousSuccessfulBuild.getNumber()}</a> (${it.previousSuccessfulBuild.getTime()}), the
+        Since build <a href="/jenkins/${it.previousSuccessfulBuild.getUrl()}flags/">#${it.previousSuccessfulBuild.getNumber()}</a> on <b>${it.previousSuccessfulBuild.getTime()}</b>, the
         following changes have occurred:
 
         <h3>Experiments</h3>
         <ul>
-          <li>${it.configurationChanges.getExperimentComparison().getInFirstOnly().size()} experiments deleted/disabled.</li>
-          <li>${it.configurationChanges.getExperimentComparison().getInSecondOnly().size()} experiments created/enabled.</li>
-          <li>${it.configurationChanges.getExperimentComparison().getInBothButDifferent().size()} changed experiments.</li>
-          <li>${it.configurationChanges.getExperimentComparison().getInBothAndTheSame().size()} unchanged experiments.</li>
+          <li>${it.configurationChanges.getExperimentComparison().getInFirstOnly().size()} experiments deleted/disabled</li>
+          <li>${it.configurationChanges.getExperimentComparison().getInSecondOnly().size()} experiments created/enabled</li>
+          <li>${it.configurationChanges.getExperimentComparison().getInBothButDifferent().size()} changed experiments</li>
+          <li>${it.configurationChanges.getExperimentComparison().getInBothAndTheSame().size()} unchanged experiments</li>
         </ul>
         <f:optionalBlock name="dynamic" title="Show experiment changes">
           <j:if test="${!it.configurationChanges.getExperimentComparison().getInSecondOnly().isEmpty()}">
@@ -66,10 +66,10 @@
 
         <h3>Target Groups</h3>
         <ul>
-          <li>${it.configurationChanges.getTargetGroupComparison().getInFirstOnly().size()} target groups deleted/disabled.</li>
-          <li>${it.configurationChanges.getTargetGroupComparison().getInSecondOnly().size()} target groups created/enabled.</li>
-          <li>${it.configurationChanges.getTargetGroupComparison().getInBothButDifferent().size()} changed target groups.</li>
-          <li>${it.configurationChanges.getTargetGroupComparison().getInBothAndTheSame().size()} unchanged target groups.</li>
+          <li>${it.configurationChanges.getTargetGroupComparison().getInFirstOnly().size()} target groups deleted/disabled</li>
+          <li>${it.configurationChanges.getTargetGroupComparison().getInSecondOnly().size()} target groups created/enabled</li>
+          <li>${it.configurationChanges.getTargetGroupComparison().getInBothButDifferent().size()} changed target groups</li>
+          <li>${it.configurationChanges.getTargetGroupComparison().getInBothAndTheSame().size()} unchanged target groups</li>
         </ul>
         <f:optionalBlock name="dynamic" title="Show target group changes">
           <j:if test="${!it.configurationChanges.getTargetGroupComparison().getInSecondOnly().isEmpty()}">
