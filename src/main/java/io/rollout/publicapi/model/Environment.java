@@ -7,6 +7,14 @@ public class Environment {
     String key; // (id)
     String description;
 
+    public Environment() {}
+
+    public Environment(String key, String name, String description) {
+        this.key = key;
+        this.name = name;
+        this.description = description;
+    }
+
     public String getName() {
         return name;
     }

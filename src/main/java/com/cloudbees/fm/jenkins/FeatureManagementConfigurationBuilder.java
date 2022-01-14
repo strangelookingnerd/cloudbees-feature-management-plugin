@@ -53,28 +53,28 @@ import org.kohsuke.stapler.QueryParameter;
  */
 public class FeatureManagementConfigurationBuilder extends Builder implements SimpleBuildStep {
 
-    private String credentialsId;
-
-    private Application application;
-    private Environment environment;
+    private final String credentialsId;
+    private final Application application;
+    private final Environment environment;
 
     @DataBoundConstructor
-    public FeatureManagementConfigurationBuilder(String credentialsId, String applicationId, String environmentId) {
+    public FeatureManagementConfigurationBuilder(String credentialsId, String applicationIdAndName, String environmentIdAndName) {
         this.credentialsId = credentialsId;
-        this.application = ((DescriptorImpl)getDescriptor()).applicationMap.get(applicationId);
-        this.environment = ((DescriptorImpl)getDescriptor()).environmentMap.get(environmentId);
+        IdAndName appIdName = IdAndName.parse(applicationIdAndName);
+        this.application = new Application(appIdName.getId(), appIdName.getName());
+        IdAndName envIdName = IdAndName.parse(environmentIdAndName);
+        this.environment = new Environment(envIdName.getId(), envIdName.getName(), null);
     }
 
     public String getCredentialsId() {
         return credentialsId;
     }
 
-    public String getApplicationId() {
-        return application.getId();
+    public String getApplicationIdAndName() {
+        return new IdAndName(application.getId(), application.getName()).toString();
     }
-
-    public String getEnvironmentId() {
-        return environment.getKey();
+    public String getEnvironmentIdAndName() {
+        return new IdAndName(environment.getKey(), environment.getName()).toString();
     }
 
     @Override
@@ -101,8 +101,8 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
         List<TargetGroup> targetGroups = PublicApi.getInstance().getTargetGroups(apiToken, application.getId());
 
         // Save the flags and target groups to disk
-        DataPersister.writeValue(run.getRootDir(), getEnvironmentId(), DataPersister.EntityType.FLAG, flags);
-        DataPersister.writeValue(run.getRootDir(), getEnvironmentId(), DataPersister.EntityType.TARGET_GROUP, targetGroups);
+        DataPersister.writeValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.FLAG, flags);
+        DataPersister.writeValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.TARGET_GROUP, targetGroups);
 
         listener.getLogger().printf("From the Public API, there were %d flags and %d target groups", flags.size(), targetGroups.size());
     }
@@ -140,11 +140,8 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
 
         private static final Logger LOGGER = Logger.getLogger(DescriptorImpl.class.getName());
 
-        // A transient map of the ID->entity models, so that we can retrieve something that I've forgotten
-        private final Map<String, Application> applicationMap = new HashMap<>();
-        private final Map<String, Environment> environmentMap = new HashMap<>();
-        private transient Set<String> validCredentialIds = new HashSet<>();
-        private transient Set<String> invalidCredentialIds = new HashSet<>();
+        private final transient Set<String> validCredentialIds = new HashSet<>();
+        private final transient Set<String> invalidCredentialIds = new HashSet<>();
 
         @Override
         @NonNull
@@ -185,7 +182,7 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
         public FormValidation doCheckCredentialsId(@QueryParameter String credentialsId) {
             // Checking whether the credential is valid is a PITA as CBFM rate limits the API calls
             // Also, this method gets called many times and that overloads the API rate limits. Use a stored list of valid or invalid IDs.
-            if (validCredentialIds.contains(credentialsId)) {
+            if (validCredentialIds.contains(credentialsId) || StringUtils.isBlank(credentialsId)) {
                 return FormValidation.ok();
             } else if (invalidCredentialIds.contains(credentialsId)) {
                 return FormValidation.error("API Token is invalid");
@@ -218,7 +215,7 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
             return creds.stream().findFirst().map(c -> c.getSecret().getPlainText()).orElseThrow(() -> new RuntimeException("Could not find credential ID " + credentialsId));
         }
 
-        public ListBoxModel doFillApplicationIdItems(@QueryParameter String credentialsId) throws IOException {
+        public ListBoxModel doFillApplicationIdAndNameItems(@QueryParameter String credentialsId) throws IOException {
             if (StringUtils.isBlank(credentialsId) || invalidCredentialIds.contains(credentialsId)) {
                 return null;
             }
@@ -227,10 +224,7 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
                 ListBoxModel items = new StandardListBoxModel().includeEmptyValue();
 
                 PublicApi.getInstance().listApplications(getApiToken(credentialsId))
-                        .forEach(application -> {
-                            applicationMap.put(application.getId(), application);
-                            items.add(application.getName(), application.getId());
-                        });
+                        .forEach(application -> items.add(application.getName(), new IdAndName(application.getId(), application.getName()).toString()));
 
                 return items;
             } catch (Exception e) {
@@ -238,19 +232,16 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
             }
         }
 
-        public ListBoxModel doFillEnvironmentIdItems(@QueryParameter String credentialsId, @QueryParameter String applicationId) throws IOException {
-            if (StringUtils.isBlank(credentialsId) || invalidCredentialIds.contains(credentialsId) || StringUtils.isBlank(applicationId)) {
+        public ListBoxModel doFillEnvironmentIdAndNameItems(@QueryParameter String credentialsId, @QueryParameter String applicationIdAndName) throws IOException {
+            if (StringUtils.isBlank(credentialsId) || invalidCredentialIds.contains(credentialsId) || StringUtils.isBlank(applicationIdAndName)) {
                 return null;
             }
 
             try {
             ListBoxModel items = new StandardListBoxModel().includeEmptyValue();
 
-            PublicApi.getInstance().listEnvironments(getApiToken(credentialsId), applicationId)
-                    .forEach(environment -> {
-                        environmentMap.put(environment.getKey(), environment);
-                        items.add(environment.getName(), environment.getKey());
-                    });
+            PublicApi.getInstance().listEnvironments(getApiToken(credentialsId), IdAndName.parse(applicationIdAndName).getId())
+                    .forEach(environment -> items.add(environment.getName(), new IdAndName(environment.getKey(), environment.getName()).toString()));
 
             return items;
             } catch (Exception e) {

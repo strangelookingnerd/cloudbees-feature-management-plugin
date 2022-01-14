@@ -3,10 +3,10 @@
     <f:entry field="credentialsId" title="${%Credentials}">
         <c:select/>
     </f:entry>
-    <f:entry field="applicationId" title="Application">
+    <f:entry field="applicationIdAndName" title="Application">
         <f:select />
     </f:entry>
-    <f:entry field="environmentId" title="Environment">
+    <f:entry field="environmentIdAndName" title="Environment">
         <f:select />
     </f:entry>
 </j:jelly>
