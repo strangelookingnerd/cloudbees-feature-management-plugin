@@ -12,8 +12,7 @@ import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.client.HttpClientErrorException;
+import org.apache.commons.httpclient.HttpException;
 
 /**
  * Class for interacting with the Rollout Public API: https://docs.cloudbees.com/docs/cloudbees-feature-management-rest-api
@@ -55,7 +54,7 @@ public class PublicApi {
         if (response.isSuccessful()) {
             return mapper.readValue(response.body().string(), typeReference);
         } else {
-            throw new HttpClientErrorException(HttpStatus.valueOf(response.code()), response.body().string());
+            throw new HttpException(response.body().string());
         }
     }
 
