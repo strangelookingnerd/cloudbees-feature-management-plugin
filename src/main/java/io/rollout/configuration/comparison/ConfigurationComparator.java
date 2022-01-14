@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  *     <li>Model elements that are present in the both list and the same in both Configurations</li>
  *     <li>Model elements that are present in the both list but the Configurations differ (but with the same ID)</li>
  * </ul>
- * When comparing the {@link Flag} and {@link TargetGroup} models, we use the ID field to determine whether it has changed between one {@link Configuration} and
+ * When comparing the {@link Flag} and {@link TargetGroup} models, we use the ID field to determine whether it has changed between one object and
  * the other
  */
 public class ConfigurationComparator {
