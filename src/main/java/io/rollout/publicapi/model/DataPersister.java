@@ -24,8 +24,14 @@ public class DataPersister {
         mapper.writerWithDefaultPrettyPrinter().writeValue(filename(dir, environmentId, entityType), value);
     }
 
-    public static <T> T readValue(File dir, String environmentId, EntityType entityType, TypeReference<T> typeReference) throws IOException {
-        return mapper.readValue(filename(dir, environmentId, entityType), typeReference);
+    public static <T> T readValue(File dir, String environmentId, EntityType entityType, TypeReference<T> typeReference, T defaultValue) throws IOException {
+        final File file = filename(dir, environmentId, entityType);
+
+        if (!file.exists()) {
+            return defaultValue;
+        }
+
+        return mapper.readValue(file, typeReference);
     }
 
     public static File filename(File dir, String environmentId, EntityType entityType) {

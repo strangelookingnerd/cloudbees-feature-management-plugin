@@ -16,6 +16,7 @@ import io.rollout.publicapi.model.TargetGroup;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 import jenkins.model.Jenkins;
 import jenkins.model.RunAction2;
@@ -74,15 +75,15 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
     }
 
     public List<Flag> getFlags() throws IOException {
-        return DataPersister.readValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.FLAG, new TypeReference<List<Flag>>() {});
+        return DataPersister.readValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.FLAG, new TypeReference<List<Flag>>() {}, Collections.emptyList());
     }
 
     public List<TargetGroup> getTargetGroups() throws IOException {
-        return DataPersister.readValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.TARGET_GROUP, new TypeReference<List<TargetGroup>>() {});
+        return DataPersister.readValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.TARGET_GROUP, new TypeReference<List<TargetGroup>>() {}, Collections.emptyList());
     }
 
     public List<AuditLog> getAuditLogs() throws IOException {
-        return DataPersister.readValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.AUDIT_LOG, new TypeReference<List<AuditLog>>() {});
+        return DataPersister.readValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.AUDIT_LOG, new TypeReference<List<AuditLog>>() {}, Collections.emptyList());
     }
 
     public static AuditLogMessage prettify(AuditLog auditLog) {
@@ -115,12 +116,12 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
 
     private List<Flag> getPreviousSuccessfulFlags() throws IOException {
         // TODO - we can probably cache this and move the fetching from the Action to the Run
-        return DataPersister.readValue(run.getPreviousSuccessfulBuild().getRootDir(), environment.getKey(), DataPersister.EntityType.FLAG, new TypeReference<List<Flag>>() {});
+        return DataPersister.readValue(run.getPreviousSuccessfulBuild().getRootDir(), environment.getKey(), DataPersister.EntityType.FLAG, new TypeReference<List<Flag>>() {}, Collections.emptyList());
     }
 
     private List<TargetGroup> getPreviousSuccessfulTargetGroups() throws IOException {
         // TODO - we can probably cache this and move the fetching from the Action to the Run
-        return DataPersister.readValue(run.getPreviousSuccessfulBuild().getRootDir(), environment.getKey(), DataPersister.EntityType.TARGET_GROUP, new TypeReference<List<TargetGroup>>() {});
+        return DataPersister.readValue(run.getPreviousSuccessfulBuild().getRootDir(), environment.getKey(), DataPersister.EntityType.TARGET_GROUP, new TypeReference<List<TargetGroup>>() {}, Collections.emptyList());
     }
 
     public String getUrl() {
