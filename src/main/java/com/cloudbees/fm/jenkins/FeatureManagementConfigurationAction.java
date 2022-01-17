@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import jenkins.model.RunAction2;
 import org.apache.commons.io.IOUtils;
@@ -74,12 +75,39 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
         return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(o);
     }
 
+    private List<Flag> getFlags(Run<?, ?> run) throws IOException {
+        if (run != null) {
+            return DataPersister.readValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.FLAG, new TypeReference<List<Flag>>() {}, Collections.emptyList())
+                    .stream()
+                    .filter(Flag::isEnabled)
+                    .collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
     public List<Flag> getFlags() throws IOException {
-        return DataPersister.readValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.FLAG, new TypeReference<List<Flag>>() {}, Collections.emptyList());
+        return getFlags(run);
+    }
+
+    private List<Flag> getPreviousSuccessfulFlags() throws IOException {
+        return getFlags(run.getPreviousSuccessfulBuild());
     }
 
     public List<TargetGroup> getTargetGroups() throws IOException {
-        return DataPersister.readValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.TARGET_GROUP, new TypeReference<List<TargetGroup>>() {}, Collections.emptyList());
+        return getTargetGroups(run);
+    }
+
+    private List<TargetGroup> getPreviousSuccessfulTargetGroups() throws IOException {
+        return getTargetGroups(run.getPreviousSuccessfulBuild());
+    }
+
+    private List<TargetGroup> getTargetGroups(Run<?, ?> run) throws IOException {
+        if (run != null) {
+            return DataPersister.readValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.TARGET_GROUP, new TypeReference<List<TargetGroup>>() {}, Collections.emptyList());
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     public List<AuditLog> getAuditLogs() throws IOException {
@@ -112,16 +140,6 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
 
     public ComparisonResult<TargetGroup> getTargetGroupChanges() throws IOException {
         return new ConfigurationComparator().compare(getTargetGroups(), getPreviousSuccessfulTargetGroups());
-    }
-
-    private List<Flag> getPreviousSuccessfulFlags() throws IOException {
-        // TODO - we can probably cache this and move the fetching from the Action to the Run
-        return DataPersister.readValue(run.getPreviousSuccessfulBuild().getRootDir(), environment.getKey(), DataPersister.EntityType.FLAG, new TypeReference<List<Flag>>() {}, Collections.emptyList());
-    }
-
-    private List<TargetGroup> getPreviousSuccessfulTargetGroups() throws IOException {
-        // TODO - we can probably cache this and move the fetching from the Action to the Run
-        return DataPersister.readValue(run.getPreviousSuccessfulBuild().getRootDir(), environment.getKey(), DataPersister.EntityType.TARGET_GROUP, new TypeReference<List<TargetGroup>>() {}, Collections.emptyList());
     }
 
     public String getUrl() {

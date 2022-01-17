@@ -94,7 +94,7 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
         DataPersister.writeValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.FLAG, flags);
         DataPersister.writeValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.TARGET_GROUP, targetGroups);
 
-        listener.getLogger().printf("There are %d flags and %d target groups\n", flags.size(), targetGroups.size());
+        listener.getLogger().printf("There are %d flags (%d enabled) and %d target groups\n", flags.size(), flags.stream().filter(Flag::isEnabled).count(), targetGroups.size());
     }
 
     private void downloadAndSaveAuditLogs(String apiToken, Run<?,?> run, TaskListener listener, Date startDate) throws IOException {
