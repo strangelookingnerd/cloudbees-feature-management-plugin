@@ -17,12 +17,12 @@
 
   <section class="plugin-management-body">
     <nav xmlns:local="local" >
-      <local:tab href="${it.url}" title="Flag and target group configuration">
-        Configuration
+      <local:tab href="${it.url}" title="Audit logs">
+        Audit logs
       </local:tab>
       |
-      <local:tab href="${it.url}audit" title="Audit logs">
-        Audit logs
+      <local:tab href="${it.url}configuration" title="Flag and target group configuration">
+        Configuration
       </local:tab>
     </nav>
   </section>
