@@ -1,0 +1,12 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <st:documentation>
+    <st:attribute name="page"/>
+  </st:documentation>
+
+  <l:tabBar>
+    <l:tab name="${%Audit Log}" active="${page=='audit'}" href="." />
+    <l:tab name="${%Configuration}" active="${page=='configuration'}" href="./configuration" />
+  </l:tabBar>
+  
+</j:jelly>

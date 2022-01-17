@@ -1,10 +1,10 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:cbfm="/lib/cbfm">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
   <l:layout title="Flag configuration">
     <st:include page="sidepanel.jelly" it="${it.owner}"/>
 
     <l:main-panel>
-      <cbfm:tabs/>
+      <local:tabBar page="audit" xmlns:local="/com/cloudbees/fm/jenkins/FeatureManagementConfigurationAction"/>
       <div id="audit-log">
         <p>since build <a href="/jenkins/${it.previousSuccessfulBuild.getUrl()}flags/audit">#${it.previousSuccessfulBuild.getNumber()}</a> on <b>${it.previousSuccessfulBuild.getTime()}</b> there have been <b>${it.auditLogs.size()} events</b> logged.</p>
         <div class="audit-log-items">
