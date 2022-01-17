@@ -5,26 +5,33 @@
 
     <l:main-panel>
       <cbfm:tabs/>
-      <p>since build <a href="/jenkins/${it.previousSuccessfulBuild.getUrl()}flags/audit">#${it.previousSuccessfulBuild.getNumber()}</a> on <b>${it.previousSuccessfulBuild.getTime()}</b> there have been <b>${it.auditLogs.size()} events</b> logged.</p>
-      <j:forEach var="audit" items="${it.auditLogs}">
-        <!--TODO: I should probably use CSS for this styling-->
-        <div style="width: 100%; display: table " class="item auditLogItem">
-          <div style="width: 5%; float: left;">
-            <img src="${audit.getUser().getPicture()}"/>
-          </div>
-          <div>
-            <h4>${audit.getUserName()} ${audit.getAction()}</h4>
-            <p style="color:#808080; margin: 0px;">${audit.getCreationDate()}</p>
-            <p style="margin: 0px;">${it.prettify(audit).getMainMessage()}</p>
-            <ul style="margin: 0px;">
-              <j:forEach var="subitem" items="${it.prettify(audit).getSubItems()}">
-                <li>${subitem}</li>
-              </j:forEach>
-            </ul>
-          </div>
+      <div id="audit-log">
+        <p>since build <a href="/jenkins/${it.previousSuccessfulBuild.getUrl()}flags/audit">#${it.previousSuccessfulBuild.getNumber()}</a> on <b>${it.previousSuccessfulBuild.getTime()}</b> there have been <b>${it.auditLogs.size()} events</b> logged.</p>
+        <div class="audit-log-items">
+          <j:forEach var="audit" items="${it.auditLogs}">
+            <!--TODO: I should probably use CSS for this styling-->
+            <div class="audit-log-item">
+              <div class="col1">
+                <img src="${audit.getUser().getPicture()}"/>
+              </div>
+              <div class="col2">
+                <div class="audit-log-item-header">${audit.getUserName()} ${audit.getAction()}</div>
+                <div class="audit-log-item-date">${audit.getCreationDate()}</div>
+                <div class="audit-log-item-details">
+                  ${it.prettify(audit).getMainMessage()}
+                  <ul>
+                    <j:forEach var="subitem" items="${it.prettify(audit).getSubItems()}">
+                      <li>${subitem}</li>
+                    </j:forEach>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </j:forEach>
         </div>
-        <hr/>
-      </j:forEach>
+      </div>
+
+      <st:adjunct includes="com.cloudbees.fm.jenkins.FeatureManagementConfigurationAction.cbfm" />
     </l:main-panel>
   </l:layout>
 </j:jelly>

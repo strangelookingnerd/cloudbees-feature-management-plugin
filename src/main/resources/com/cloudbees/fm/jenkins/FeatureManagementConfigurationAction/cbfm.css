@@ -1,0 +1,43 @@
+.audit-log-items {
+}
+
+.audit-log-item {
+    display: grid;
+    grid-template-columns: 50px auto;
+    grid-gap: 10px;
+    padding: 20px 10px;
+    border-top: solid 1px #d3d3d3;
+}
+
+.audit-log-item:first-of-type {
+    border-top: none !important;
+}
+
+.col1 {
+    width: 50px;
+    text-align: center;
+}
+
+/* In case the stored image is not the right size ... */
+.col1 img {
+    width: 30px;
+    height: 30px;
+}
+
+.audit-log-item-header {
+    font-size: 1.29em;
+    font-weight: bold;
+    margin-bottom: 7px;
+}
+
+.audit-log-item-date {
+    font-size: 1em;
+    line-height: 1em;
+    color: rgba(0, 0, 0, .6);
+    margin-bottom: 7px;
+}
+
+.audit-log-item-details ul {
+    margin-top: 0;
+    margin-bottom: 0;    
+}
