@@ -6,7 +6,7 @@
     <l:main-panel>
       <local:tabBar page="audit" xmlns:local="/com/cloudbees/fm/jenkins/FeatureManagementConfigurationAction"/>
       <div id="audit-log">
-        <p>since build <a href="/jenkins/${it.previousSuccessfulBuild.getUrl()}flags/audit">#${it.previousSuccessfulBuild.getNumber()}</a> on <b>${it.previousSuccessfulBuild.getTime()}</b> there have been <b>${it.auditLogs.size()} events</b> logged.</p>
+        <p>since build <a href="/jenkins/${it.previousSuccessfulBuild.getUrl()}flags">#${it.previousSuccessfulBuild.getNumber()}</a> on <b>${it.previousSuccessfulBuild.getTime()}</b> there have been <b>${it.auditLogs.size()} events</b> logged.</p>
         <div class="audit-log-items">
           <j:forEach var="audit" items="${it.auditLogs}">
             <div class="audit-log-item">
