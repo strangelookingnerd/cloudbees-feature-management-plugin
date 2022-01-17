@@ -59,7 +59,7 @@ public class PublicApi {
         if (response.isSuccessful()) {
             return mapper.readValue(response.body().string(), typeReference);
         } else {
-            throw new HttpException(response.body().string());
+            throw new HttpException(String.format("%d error performing GET on %s: %s", response.code(), url, response.body().string()));
         }
     }
 
