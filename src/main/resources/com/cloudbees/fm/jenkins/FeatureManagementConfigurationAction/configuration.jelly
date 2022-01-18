@@ -1,6 +1,44 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
   <l:layout title="Flag configuration">
+    <l:header>
+
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.1/styles/github.min.css" />
+      <link
+              rel="stylesheet"
+              type="text/css"
+              href="https://cdn.jsdelivr.net/npm/diff2html/bundles/css/diff2html.min.css"
+      />
+      <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/diff2html/bundles/js/diff2html-ui.min.js" />
+      <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+          const targetElements = document.getElementsByClassName('diff');
+          const configuration = {
+            drawFileList: true,
+            fileListToggle: false,
+            fileListStartVisible: false,
+            fileContentToggle: false,
+            matching: 'lines',
+            outputFormat: 'side-by-side',
+            synchronisedScroll: true,
+            highlight: true,
+            renderNothingWhenEmpty: false,
+          };
+          Array.from(targetElements).forEach((targetElement) => {
+        console.log('yes');
+            try {
+              const diffString = targetElement.getAttribute('diff');
+        console.log(diffString);
+              const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
+              diff2htmlUi.draw();
+              <!--diff2htmlUi.highlightCode();-->
+            } catch {}
+          })
+        });
+      </script>
+    </l:header>
+
     <st:include page="sidepanel.jelly" it="${it.owner}"/>
 
     <l:main-panel>
@@ -11,7 +49,7 @@
       <h2>Full configuration</h2>
       <f:optionalBlock name="dynamic" title="Show full configuration">
         <h5>Flags</h5>
-        Large text blocks have problems with f:textarea. Just use textarea directly.
+        <!--Large text blocks have problems with f:textarea. Just use textarea directly.-->
         <textarea readonly="true" rows="25" class="codemirror setting-input" style="width: 100%" codemirror-mode="javascript" codemirror-config="json:true, lineNumbers:true">
           ${it.rawFlags}
         </textarea>
@@ -36,50 +74,7 @@
         </ul>
         <j:if test="${!it.flagChanges.areEqual()}">
           <f:optionalBlock name="dynamic" title="Show flag changes">
-            <j:if test="${!it.flagChanges.getInSecondOnly().isEmpty()}">
-              <h5>New/Enabled</h5>
-              <j:forEach var="flag" items="${it.flagChanges.getInSecondOnly()}">
-                <p><a href='https://app.rollout.io/app/${it.application.id}/environment/${it.environment.key}/flags/${flag.getName()}'>${flag.getName()}</a></p>
-                <f:textarea value="${it.toJson(flag)}" readonly="true" codemirror-mode="javascript"
-                            codemirror-config="json:true, lineNumbers:true"/>
-              </j:forEach>
-            </j:if>
-
-            <j:if test="${!it.flagChanges.getInFirstOnly().isEmpty()}">
-              <h5>Deleted/Disabled</h5>
-              <j:forEach var="flag" items="${it.flagChanges.getInFirstOnly()}">
-                <p><a href='https://app.rollout.io/app/${it.application.id}/environment/${it.environment.key}/flags/${flag.getName()}'>${flag.getName()}</a></p>
-                <f:textarea value="${it.toJson(flag)}" readonly="true" codemirror-mode="javascript"
-                            codemirror-config="json:true, lineNumbers:true"/>
-              </j:forEach>
-            </j:if>
-
-            <j:if test="${!it.flagChanges.getInBothButDifferent().isEmpty()}">
-              <h5>Modified</h5>
-              <div style="width: 100%">
-                <div style="float:left; width: 50%">
-                  <p>Build #${it.previousSuccessfulBuild.getNumber()}</p>
-                </div>
-                <div style="float:left; width: 50%">
-                  <p>This build</p>
-                </div>
-              </div>
-              <j:forEach var="comparison" items="${it.flagChanges.getInBothButDifferent()}">
-                <p><a href='https://app.rollout.io/app/${it.application.id}/environment/${it.environment.key}/flags/${comparison.getLeft().getName()}/logs'>${comparison.getLeft().getName()}</a></p>
-                <div style="width: 100%">
-                  <div style="float:left; width: 50%">
-                    <f:textarea value="${it.toJson(comparison.getLeft())}" readonly="true" codemirror-mode="javascript"
-                                codemirror-config="json:true, lineNumbers:true"/>
-
-                  </div>
-                  <div style="float:left; width: 50%">
-                    <f:textarea value="${it.toJson(comparison.getRight())}" readonly="true" codemirror-mode="javascript"
-                                codemirror-config="json:true, lineNumbers:true"/>
-                  </div>
-                </div>
-              </j:forEach>
-            </j:if>
-
+            <div class="diff" diff="${it.generateDiff(it.flagChanges)}" />
           </f:optionalBlock>
         </j:if>
 
@@ -93,43 +88,7 @@
         <j:if test="${!it.targetGroupChanges.areEqual()}">
           <!--NOTE: We can't add a hyperlink to the target group, because the URL requires the target group ID, but we don't get that from the public API data-->
           <f:optionalBlock name="dynamic" title="Show target group changes">
-            <j:if test="${!it.targetGroupChanges.getInSecondOnly().isEmpty()}">
-              <h5>New/Enabled</h5>
-              <f:textarea value="${it.toJson(it.targetGroupChanges.getInSecondOnly())}" readonly="true" codemirror-mode="javascript"
-                          codemirror-config="json:true, lineNumbers:true"/>
-            </j:if>
-
-            <j:if test="${!it.targetGroupChanges.getInFirstOnly().isEmpty()}">
-              <h5>Deleted/Disabled</h5>
-              <f:textarea value="${it.toJson(it.targetGroupChanges.getInFirstOnly())}" readonly="true" codemirror-mode="javascript"
-                          codemirror-config="json:true, lineNumbers:true"/>
-            </j:if>
-
-            <j:if test="${!it.targetGroupChanges.getInBothButDifferent().isEmpty()}">
-              <h5>Modified</h5>
-              <div style="width: 100%">
-                <div style="float:left; width: 50%">
-                  <p>Build #${it.previousSuccessfulBuild.getNumber()}</p>
-                </div>
-                <div style="float:left; width: 50%">
-                  <p>This build</p>
-                </div>
-              </div>
-              <j:forEach var="comparison" items="${it.targetGroupChanges.getInBothButDifferent()}">
-                <div style="width: 100%">
-                  <div style="float:left; width: 50%">
-                    <f:textarea value="${it.toJson(comparison.getLeft())}" readonly="true" codemirror-mode="javascript"
-                                codemirror-config="json:true, lineNumbers:true"/>
-
-                  </div>
-                  <div style="float:left; width: 50%">
-                    <f:textarea value="${it.toJson(comparison.getRight())}" readonly="true" codemirror-mode="javascript"
-                                codemirror-config="json:true, lineNumbers:true"/>
-                  </div>
-                </div>
-              </j:forEach>
-            </j:if>
-
+            <div class="diff" diff="${it.generateDiff(it.targetGroupChanges)}" />
           </f:optionalBlock>
         </j:if>
       </j:if>

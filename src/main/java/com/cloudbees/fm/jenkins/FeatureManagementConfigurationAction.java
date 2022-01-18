@@ -1,5 +1,6 @@
 package com.cloudbees.fm.jenkins;
 
+import com.cloudbees.diff.Diff;
 import com.cloudbees.fm.jenkins.ui.AuditLogMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -9,12 +10,14 @@ import io.rollout.configuration.comparison.ComparisonResult;
 import io.rollout.configuration.comparison.ConfigurationComparator;
 import io.rollout.publicapi.model.Application;
 import io.rollout.publicapi.model.AuditLog;
+import io.rollout.publicapi.model.ConfigEntity;
 import io.rollout.publicapi.model.DataPersister;
 import io.rollout.publicapi.model.Environment;
 import io.rollout.publicapi.model.Flag;
 import io.rollout.publicapi.model.TargetGroup;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
@@ -72,7 +75,7 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
     }
 
     public String toJson(Object o) throws JsonProcessingException {
-        return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(o);
+        return o == null ? "" : new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(o);
     }
 
     private List<Flag> getFlags(Run<?, ?> run) throws IOException {
@@ -145,4 +148,57 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
     public String getUrl() {
         return Jenkins.get().getRootUrl() + run.getUrl() + getUrlName() + "/";
     }
+
+    public String generateDiff(ComparisonResult<? extends ConfigEntity> comparisonResult) {
+        // Generate a Unified Diff with all the entity changes
+        StringBuilder builder = new StringBuilder();
+
+        // First get all the new elements
+        comparisonResult.getInSecondOnly().forEach(entity -> {
+            try {
+                String json = toJson(entity);
+                String diff = Diff.diff(new StringReader(""), new StringReader(json), true)
+                        .toUnifiedDiff(entity.getName(), entity.getName(), new StringReader(""), new StringReader(json), 100); // Don't use Integer.MAX_VALUE here, but give it a big enough value so that it shows the whole config
+                builder.append("diff\n")
+                        .append("new file mode 100666\n")
+                        .append(diff);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        // Now get all the deleted elements
+        comparisonResult.getInFirstOnly().forEach(entity -> {
+            try {
+                String json = toJson(entity);
+                String diff = Diff.diff(new StringReader(json), new StringReader(""), true)
+                        .toUnifiedDiff(entity.getName(), entity.getName(), new StringReader(json), new StringReader(""), 100); // Don't use Integer.MAX_VALUE here, but give it a big enough value so that it shows the whole config
+                builder.append("diff\n")
+                        .append("deleted file mode 100666\n")
+                        .append(diff);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        // Now get all the changed elements
+        comparisonResult.getInBothButDifferent().stream()
+            .forEach(entity -> {
+                try {
+                    String left = toJson(entity.getLeft()).trim();
+                    String right = toJson(entity.getRight()).trim();
+                    String name = entity.getLeft().getName();
+
+                    String diff = Diff.diff(new StringReader(left), new StringReader(right), true)
+                            .toUnifiedDiff(name, name, new StringReader(left), new StringReader(right), 100); // Don't use Integer.MAX_VALUE here, but give it a big enough value so that it shows the whole config
+                    builder.append("diff\n").append(diff);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+            });
+
+        return builder.toString();
+    }
+
 }
