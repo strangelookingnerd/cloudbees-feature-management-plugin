@@ -136,8 +136,7 @@
       <div style="display: none;">
         <!--        HACK - render a f:textarea to make the basic textarea work. 🤷
                     Without this, the textarea used above doesn't seem to apply the correct javascript styling-->
-        <f:textarea value="${it.toJson(comparison.getLeft())}" readonly="true" codemirror-mode="javascript"
-                    codemirror-config="json:true, lineNumbers:true"/>
+        <f:textarea value="" readonly="true" codemirror-mode="javascript" codemirror-config="json:true, lineNumbers:true"/>
       </div>
 
       <st:adjunct includes="com.cloudbees.fm.jenkins.FeatureManagementConfigurationAction.cbfm" />
