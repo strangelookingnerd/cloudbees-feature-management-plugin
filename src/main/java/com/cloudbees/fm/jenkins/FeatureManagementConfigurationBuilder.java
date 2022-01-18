@@ -100,7 +100,7 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
     private void downloadAndSaveAuditLogs(String apiToken, Run<?,?> run, TaskListener listener, Date startDate) throws IOException {
         List<AuditLog> auditLogs = PublicApi.getInstance().getAuditLogs(apiToken, application.getId(), environment.getName(), startDate);
         DataPersister.writeValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.AUDIT_LOG, auditLogs);
-        listener.getLogger().printf("There were %d changes from the audit logs", auditLogs.size());
+        listener.getLogger().printf("There were %d changes from the audit logs\n", auditLogs.size());
     }
 
     @Symbol("featureManagementConfig")
