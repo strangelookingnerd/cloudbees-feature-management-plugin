@@ -26,10 +26,8 @@
             renderNothingWhenEmpty: false,
           };
           Array.from(targetElements).forEach((targetElement) => {
-        console.log('yes');
             try {
               const diffString = targetElement.getAttribute('diff');
-        console.log(diffString);
               const diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
               diff2htmlUi.draw();
               <!--diff2htmlUi.highlightCode();-->
