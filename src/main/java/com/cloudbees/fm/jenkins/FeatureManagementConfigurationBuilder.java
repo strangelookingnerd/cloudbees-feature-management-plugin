@@ -64,6 +64,7 @@ import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  * 
@@ -172,7 +173,15 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
                     .includeCurrentValue(credentialsId);
         }
 
-        public FormValidation doCheckCredentialsId(@QueryParameter String credentialsId) {
+        @POST
+        public FormValidation doCheckCredentialsId(@QueryParameter String credentialsId, @AncestorInPath Item item) {
+            // Checking that the user has permissions to configure this item prevents unauthenticated users trying to brute-force credential IDs
+            // https://www.jenkins.io/doc/developer/security/form-validation/
+            if (item == null) { // no context
+                return FormValidation.ok();
+            }
+            item.checkPermission(Item.CONFIGURE);
+
             // Checking whether the credential is valid is a PITA as CBFM rate limits the API calls
             // Also, this method gets called many times and that overloads the API rate limits. Use a stored list of valid or invalid IDs.
             if (validCredentialIds.contains(credentialsId) || StringUtils.isBlank(credentialsId)) {
