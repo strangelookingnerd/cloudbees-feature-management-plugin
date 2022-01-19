@@ -222,7 +222,9 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
         @POST
         public ListBoxModel doFillApplicationIdAndNameItems(@QueryParameter String credentialsId, @AncestorInPath Item item) throws IOException {
             if (item != null) {
-                item.checkPermission(Permission.CONFIGURE);
+                if (!item.hasPermission(Permission.CONFIGURE)) {
+                    return new StandardListBoxModel().includeEmptyValue();
+                }
             }
             if (StringUtils.isBlank(credentialsId) || invalidCredentialIds.contains(credentialsId)) {
                 return null;
