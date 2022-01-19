@@ -37,6 +37,7 @@ import hudson.model.Item;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.security.ACL;
+import hudson.security.Permission;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
@@ -148,6 +149,7 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
             return true;
         }
 
+        @POST
         public ListBoxModel doFillCredentialsIdItems(
                 @AncestorInPath Item item,
                 @QueryParameter String credentialsId) {
@@ -217,7 +219,11 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
             return creds.stream().findFirst().map(c -> c.getSecret().getPlainText()).orElseThrow(() -> new RuntimeException("Could not find credential ID " + credentialsId));
         }
 
-        public ListBoxModel doFillApplicationIdAndNameItems(@QueryParameter String credentialsId) throws IOException {
+        @POST
+        public ListBoxModel doFillApplicationIdAndNameItems(@QueryParameter String credentialsId, @AncestorInPath Item item) throws IOException {
+            if (item != null) {
+                item.checkPermission(Permission.CONFIGURE);
+            }
             if (StringUtils.isBlank(credentialsId) || invalidCredentialIds.contains(credentialsId)) {
                 return null;
             }
@@ -234,7 +240,11 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
             }
         }
 
-        public ListBoxModel doFillEnvironmentIdAndNameItems(@QueryParameter String credentialsId, @QueryParameter String applicationIdAndName) throws IOException {
+        @POST
+        public ListBoxModel doFillEnvironmentIdAndNameItems(@QueryParameter String credentialsId, @QueryParameter String applicationIdAndName, @AncestorInPath Item item) throws IOException {
+            if (item != null) {
+                item.checkPermission(Permission.CONFIGURE);
+            }
             if (StringUtils.isBlank(credentialsId) || invalidCredentialIds.contains(credentialsId) || StringUtils.isBlank(applicationIdAndName)) {
                 return null;
             }
