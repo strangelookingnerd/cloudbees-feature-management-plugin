@@ -138,7 +138,17 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
     }
 
     public List<AuditLog> getAuditLogs() throws IOException {
-        return DataPersister.readValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.AUDIT_LOG, new TypeReference<List<AuditLog>>() {}, Collections.emptyList());
+        List<AuditLog> logs = DataPersister.readValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.AUDIT_LOG, new TypeReference<List<AuditLog>>()
+        {}, Collections.emptyList());
+        logs.forEach(entry -> {
+            if (entry.getUser() == null) {
+                entry.setUser(new AuditLog.User());
+            }
+            if (entry.getUser().getPicture() == null) {
+                entry.getUser().setPicture("https://x-cdn.rollout.io/1/images/icons/no-icon.svg"); // set a default picture for SDK-generated log events
+            }
+        });
+        return logs;
     }
 
     public static AuditLogMessage prettify(AuditLog auditLog) {

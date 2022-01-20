@@ -58,12 +58,15 @@ public class AuditLog {
     private String message;
     @JsonProperty("creation_date")
     private Date creationDate;
+    private User user = new User();
 
     public User getUser() {
         return user;
     }
 
-    private User user;
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     public String getUserName() {
         return userName;
@@ -111,6 +114,9 @@ public class AuditLog {
 
         public String getPicture() {
             return picture;
+        }
+        public void setPicture(String picture) {
+            this.picture = picture;
         }
     }
 }
