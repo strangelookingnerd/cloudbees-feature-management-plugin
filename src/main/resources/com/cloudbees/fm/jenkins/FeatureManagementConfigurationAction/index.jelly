@@ -30,6 +30,9 @@
               </div>
             </j:forEach>
           </div>
+          <j:if test="${it.auditLogs.size() >= 30}">
+            <p>Only the first <b>30</b> log entries are displayed here. For a full list, please visit the <a href="https://app.rollout.io/app/${it.application.id}/log">dashboard</a></p>
+          </j:if>
         </j:if>
         <j:if test="${it.previousSuccessfulBuild == null}">
           <p>There is no previous build to compare flag changes.</p>
