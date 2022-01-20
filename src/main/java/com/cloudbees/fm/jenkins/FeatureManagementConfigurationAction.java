@@ -162,11 +162,11 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
     }
 
     public ComparisonResult<Flag> getFlagChanges() throws IOException {
-        return new ConfigurationComparator().compare(getFlags(), getPreviousSuccessfulFlags());
+        return new ConfigurationComparator().compare(getPreviousSuccessfulFlags(), getFlags());
     }
 
     public ComparisonResult<TargetGroup> getTargetGroupChanges() throws IOException {
-        return new ConfigurationComparator().compare(getTargetGroups(), getPreviousSuccessfulTargetGroups());
+        return new ConfigurationComparator().compare(getPreviousSuccessfulTargetGroups(), getTargetGroups());
     }
 
     public String getUrl() {
