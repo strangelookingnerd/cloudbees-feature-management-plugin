@@ -7,28 +7,33 @@
       <local:tabBar page="audit" xmlns:local="/com/cloudbees/fm/jenkins/FeatureManagementConfigurationAction"/>
       <h1>Flag configuration changes for <a href="https://app.rollout.io/app/${it.application.id}">${it.application.name}</a>/<a href="https://app.rollout.io/app/${it.application.id}/environment/${it.environment.key}/flags">${it.environment.name}</a></h1>
       <div id="audit-log">
-        <p>since build <a href="/jenkins/${it.previousSuccessfulBuild.getUrl()}flags">#${it.previousSuccessfulBuild.getNumber()}</a> on <b>${it.previousSuccessfulBuild.getTime()}</b> there have been <b>${it.auditLogs.size()} events</b> logged.</p>
-        <div class="audit-log-items">
-          <j:forEach var="audit" items="${it.auditLogs}">
-            <div class="audit-log-item">
-              <div class="col1">
-                <img src="${audit.getUser().getPicture()}"/>
-              </div>
-              <div class="col2">
-                <div class="audit-log-item-header">${audit.getUserName()} ${audit.getAction()}</div>
-                <div class="audit-log-item-date">${audit.getCreationDate()}</div>
-                <div class="audit-log-item-details">
-                  ${it.prettify(audit).getMainMessage()}
-                  <ul>
-                    <j:forEach var="subitem" items="${it.prettify(audit).getSubItems()}">
-                      <li>${subitem}</li>
-                    </j:forEach>
-                  </ul>
+        <j:if test="${it.previousSuccessfulBuild != null}">
+          <p>since build <a href="/jenkins/${it.previousSuccessfulBuild.getUrl()}flags">#${it.previousSuccessfulBuild.getNumber()}</a> on <b>${it.previousSuccessfulBuild.getTime()}</b> there have been <b>${it.auditLogs.size()} events</b> logged.</p>
+          <div class="audit-log-items">
+            <j:forEach var="audit" items="${it.auditLogs}">
+              <div class="audit-log-item">
+                <div class="col1">
+                  <img src="${audit.getUser().getPicture()}"/>
+                </div>
+                <div class="col2">
+                  <div class="audit-log-item-header">${audit.getUserName()} ${audit.getAction()}</div>
+                  <div class="audit-log-item-date">${audit.getCreationDate()}</div>
+                  <div class="audit-log-item-details">
+                    ${it.prettify(audit).getMainMessage()}
+                    <ul>
+                      <j:forEach var="subitem" items="${it.prettify(audit).getSubItems()}">
+                        <li>${subitem}</li>
+                      </j:forEach>
+                    </ul>
+                  </div>
                 </div>
               </div>
-            </div>
-          </j:forEach>
-        </div>
+            </j:forEach>
+          </div>
+        </j:if>
+        <j:if test="${it.previousSuccessfulBuild == null}">
+          <p>There is no previous build to compare flag changes.</p>
+        </j:if>
       </div>
 
       <st:adjunct includes="com.cloudbees.fm.jenkins.FeatureManagementConfigurationAction.cbfm" />
