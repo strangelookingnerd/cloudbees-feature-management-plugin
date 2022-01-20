@@ -34,6 +34,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
+import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.security.ACL;
@@ -101,13 +102,17 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
                         @NonNull TaskListener listener)
             throws IOException {
 
-        run.addAction(new FeatureManagementConfigurationAction(application, environment));
-
-        String apiToken = ((DescriptorImpl)getDescriptor()).getApiToken(credentialsId);
-        downloadAndSaveFlags(apiToken, run, listener);
-        if (run.getPreviousSuccessfulBuild() != null) {
-            // Audit logs (to show changes) are only relevant when comparing against a previous (successful) build.
-            downloadAndSaveAuditLogs(apiToken, run, listener, run.getPreviousSuccessfulBuild().getTime());
+        try {
+            String apiToken = ((DescriptorImpl) getDescriptor()).getApiToken(credentialsId);
+            downloadAndSaveFlags(apiToken, run, listener);
+            if (run.getPreviousSuccessfulBuild() != null) {
+                // Audit logs (to show changes) are only relevant when comparing against a previous (successful) build.
+                downloadAndSaveAuditLogs(apiToken, run, listener, run.getPreviousSuccessfulBuild().getTime());
+            }
+            run.addAction(new FeatureManagementConfigurationAction(application, environment));
+        } catch (Exception e) {
+            listener.getLogger().printf("Error fetching flag configurations: %s\n", e);
+            run.setResult(Result.UNSTABLE);
         }
     }
 
