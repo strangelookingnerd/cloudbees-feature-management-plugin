@@ -60,7 +60,7 @@
 
       <j:if test="${it.previousSuccessfulBuild != null}">
         <h2>Changes since previous successful build configuration</h2>
-        Since build <a href="/jenkins/${it.previousSuccessfulBuild.getUrl()}flags/configuration">#${it.previousSuccessfulBuild.getNumber()}</a> on <b>${it.previousSuccessfulBuild.getTime()}</b>, the
+        Since build <a href="${rootURL}/${it.previousSuccessfulBuild.getUrl()}flags/configuration">#${it.previousSuccessfulBuild.getNumber()}</a> on <b>${it.previousSuccessfulBuild.getTime()}</b>, the
         following changes have occurred:
 
         <h3>Flags</h3>

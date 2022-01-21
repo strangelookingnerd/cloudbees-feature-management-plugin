@@ -3,7 +3,7 @@
     <t:summary icon="/plugin/cloudbees-feature-management/images/cloudbees.svg">
         <p><a href="flags">Flag configuration</a> consists of <b>${it.flags.size()} flags</b> and <b>${it.targetGroups.size()} target groups</b></p>
         <j:if test="${it.previousSuccessfulBuild != null}">
-            <p>There ${it.hasChanged ? "have been" : "are no"} changes since the previous successful build (<a href="/jenkins/${it.previousSuccessfulBuild.getUrl()}">#${it.previousSuccessfulBuild.getNumber()}</a>)</p>
+            <p>There ${it.hasChanged ? "have been" : "are no"} changes since the previous successful build (<a href="${rootURL}/${it.previousSuccessfulBuild.getUrl()}">#${it.previousSuccessfulBuild.getNumber()}</a>)</p>
         </j:if>
     </t:summary>
 </j:jelly>

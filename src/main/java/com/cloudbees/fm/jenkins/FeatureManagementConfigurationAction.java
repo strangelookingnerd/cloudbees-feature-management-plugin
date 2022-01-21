@@ -46,7 +46,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import jenkins.model.Jenkins;
 import jenkins.model.RunAction2;
 import org.apache.commons.io.IOUtils;
 
@@ -177,10 +176,6 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
 
     public ComparisonResult<TargetGroup> getTargetGroupChanges() throws IOException {
         return new ConfigurationComparator().compare(getPreviousSuccessfulTargetGroups(), getTargetGroups());
-    }
-
-    public String getUrl() {
-        return Jenkins.get().getRootUrl() + run.getUrl() + getUrlName() + "/";
     }
 
     public String generateDiff(ComparisonResult<? extends ConfigEntity> comparisonResult) {
