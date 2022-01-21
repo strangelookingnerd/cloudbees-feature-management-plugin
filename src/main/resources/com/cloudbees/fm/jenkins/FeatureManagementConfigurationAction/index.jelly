@@ -5,7 +5,7 @@
 
     <l:main-panel>
       <local:tabBar page="audit" xmlns:local="/com/cloudbees/fm/jenkins/FeatureManagementConfigurationAction"/>
-      <h1>Flag configuration changes for <a href="https://app.rollout.io/app/${it.application.id}">${it.application.name}</a>/<a href="https://app.rollout.io/app/${it.application.id}/environment/${it.environment.key}/${it.urlName}">${it.environment.name}</a></h1>
+      <h1>Flag configuration changes for <a href="https://app.rollout.io/app/${it.application.id}">${it.application.name}</a>/<a href="https://app.rollout.io/app/${it.application.id}/environment/${it.environment.key}/flags">${it.environment.name}</a></h1>
       <div id="audit-log">
         <j:if test="${it.previousSuccessfulBuild != null}">
           <p>since build <a href="${rootURL}/${it.previousSuccessfulBuild.getUrl()}${it.urlName}">#${it.previousSuccessfulBuild.getNumber()}</a> on <b>${it.previousSuccessfulBuild.getTime()}</b> there have been <b>${it.auditLogs.size()} events</b> logged.</p>
