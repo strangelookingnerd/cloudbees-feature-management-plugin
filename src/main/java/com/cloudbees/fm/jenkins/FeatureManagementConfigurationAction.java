@@ -67,12 +67,18 @@ public class FeatureManagementConfigurationAction implements RunAction2 {
 
     @Override
     public String getDisplayName() {
-        return "Flag configurations";
+        // Just show "Flag Configurations" if there is only one action for this build, otherwise show the environment name as well
+        if (run.getActions(FeatureManagementConfigurationAction.class).size() == 1) {
+            return "Flag Configurations";
+        } else {
+            return "Flag configurations (" + application.getName() + "/" + environment.getName() + ")";
+        }
     }
 
     @Override
     public String getUrlName() {
-        return "flags";
+        // We can't use a path delimiter (/) here as it doesn't work.
+        return "flags-" + application.getId() + "-" + environment.getKey();
     }
 
     @Override

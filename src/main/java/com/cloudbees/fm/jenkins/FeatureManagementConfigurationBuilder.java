@@ -125,13 +125,13 @@ public class FeatureManagementConfigurationBuilder extends Builder implements Si
         DataPersister.writeValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.FLAG, flags);
         DataPersister.writeValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.TARGET_GROUP, targetGroups);
 
-        listener.getLogger().printf("There are %d flags (%d enabled) and %d target groups\n", flags.size(), flags.stream().filter(Flag::isEnabled).count(), targetGroups.size());
+        listener.getLogger().printf("For %s/%s there are %d flags (%d enabled) and %d target groups\n", application.getName(), environment.getName(), flags.size(), flags.stream().filter(Flag::isEnabled).count(), targetGroups.size());
     }
 
     private void downloadAndSaveAuditLogs(String apiToken, Run<?,?> run, TaskListener listener, Date startDate) throws IOException {
         List<AuditLog> auditLogs = PublicApi.getInstance().getAuditLogs(apiToken, application.getId(), environment.getName(), startDate);
         DataPersister.writeValue(run.getRootDir(), environment.getKey(), DataPersister.EntityType.AUDIT_LOG, auditLogs);
-        listener.getLogger().printf("There were %d changes from the audit logs\n", auditLogs.size());
+        listener.getLogger().printf("For %s/%s there were %d changes from the audit logs\n", application.getName(), environment.getName(), auditLogs.size());
     }
 
     @Symbol("featureManagementConfig")

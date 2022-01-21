@@ -41,9 +41,8 @@
 
     <l:main-panel>
       <local:tabBar page="configuration" xmlns:local="/com/cloudbees/fm/jenkins/FeatureManagementConfigurationAction"/>
-      <h1>Flag configurations for <a href="https://app.rollout.io/app/${it.application.id}">${it.application.name}</a>/<a href="https://app.rollout.io/app/${it.application.id}/environment/${it.environment.key}/flags">${it.environment.name}</a></h1>
+      <h1>Flag configurations for <a href="https://app.rollout.io/app/${it.application.id}">${it.application.name}</a>/<a href="https://app.rollout.io/app/${it.application.id}/environment/${it.environment.key}/${it.urlName}">${it.environment.name}</a></h1>
       <p>The flag configuration consists of <b>${it.flags.size()} flags</b> and <b>${it.targetGroups.size()} target groups</b>.</p>
-      <!--      <p>It was last modified on ${it.signedDate}.</p>-->
       <h2>Full configuration</h2>
       <f:optionalBlock name="dynamic" title="Show full configuration">
         <h5>Flags</h5>
@@ -60,7 +59,7 @@
 
       <j:if test="${it.previousSuccessfulBuild != null}">
         <h2>Changes since previous successful build configuration</h2>
-        Since build <a href="${rootURL}/${it.previousSuccessfulBuild.getUrl()}flags/configuration">#${it.previousSuccessfulBuild.getNumber()}</a> on <b>${it.previousSuccessfulBuild.getTime()}</b>, the
+        Since build <a href="${rootURL}/${it.previousSuccessfulBuild.getUrl()}${it.urlName}/configuration">#${it.previousSuccessfulBuild.getNumber()}</a> on <b>${it.previousSuccessfulBuild.getTime()}</b>, the
         following changes have occurred:
 
         <h3>Flags</h3>
