@@ -1,2 +1,1 @@
 _extends: .github
-tag-template: cloudbees-feature-management-$NEXT_MINOR_VERSION
