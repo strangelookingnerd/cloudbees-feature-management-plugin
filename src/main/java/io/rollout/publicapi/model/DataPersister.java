@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class DataPersister {
     public enum EntityType {
@@ -59,8 +59,12 @@ public class DataPersister {
     }
 
     public static File filename(File dir, String environmentId, EntityType entityType) {
-        ObjectUtils.requireNonEmpty(environmentId);
-        ObjectUtils.requireNonEmpty(entityType);
+        if (StringUtils.isBlank(environmentId)) {
+            throw new IllegalArgumentException("environmentId missing");
+        }
+        if (entityType == null) {
+            throw new IllegalArgumentException("entityType cannot be null");
+        }
         return Paths.get(dir.getAbsolutePath(), environmentId + "-" + entityType + ".json").toFile();
     }
 }
