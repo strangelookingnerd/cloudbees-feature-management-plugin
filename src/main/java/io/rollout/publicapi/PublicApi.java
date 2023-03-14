@@ -39,7 +39,6 @@ import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.apache.commons.httpclient.HttpException;
 
 /**
  * Class for interacting with the Rollout Public API: https://docs.cloudbees.com/docs/cloudbees-feature-management-rest-api
@@ -83,7 +82,7 @@ public class PublicApi {
         if (response.isSuccessful()) {
             return mapper.readValue(response.body().string(), typeReference);
         } else {
-            throw new HttpException(String.format("%d error performing GET on %s: %s", response.code(), url, response.body().string()));
+            throw new RuntimeException(String.format("%d error performing GET on %s: %s", response.code(), url, response.body().string()));
         }
     }
 
